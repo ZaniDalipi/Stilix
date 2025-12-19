@@ -396,20 +396,39 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
       const originalPrice = prices[0] || 0;
       const salePrice = prices.length > 1 ? prices[prices.length - 1] : 0;
 
-      // Extract URL - more patterns
+      // Extract URL - comprehensive patterns for product links
       const linkPatterns = [
-        /href="([^"]*\/product[^"]*)"/i,
+        // Specific product page patterns
+        /href="([^"]*\/product\/[^"]*)"/i,
+        /href="([^"]*\/produkt\/[^"]*)"/i,
         /href="([^"]*\/p\/[^"]*)"/i,
-        /href="([^"]*\/item[^"]*)"/i,
+        /href="([^"]*\/item\/[^"]*)"/i,
+        /href="([^"]*\/artikal\/[^"]*)"/i,
+        // Pattern with product ID in URL
+        /href="([^"]*-p-\d+[^"]*)"/i,
+        /href="([^"]*\/\d+\.html[^"]*)"/i,
+        // Data attributes for product URL
+        /data-url="([^"]+)"/i,
+        /data-href="([^"]+)"/i,
+        /data-product-url="([^"]+)"/i,
+        // Generic href patterns (last resort)
+        /href="(\/[^"]*[a-z]+-[a-z0-9-]+[^"]*)"/i,
         /href="(https?:\/\/[^"]+)"/i,
-        /href="([^"]+)"/i,
       ];
 
       let productUrl = baseUrl;
       for (const pattern of linkPatterns) {
         const match = productHtml.match(pattern);
-        if (match && !match[1].includes('javascript:') && !match[1].includes('#')) {
-          productUrl = normalizeImageUrl(match[1], baseUrl);
+        if (match) {
+          const url = match[1];
+          // Skip invalid URLs
+          if (url.includes('javascript:') || url.includes('#') ||
+              url === '/' || url.length < 5 ||
+              url.includes('login') || url.includes('cart') ||
+              url.includes('wishlist') || url.includes('compare')) {
+            continue;
+          }
+          productUrl = normalizeImageUrl(url, baseUrl);
           break;
         }
       }
@@ -546,13 +565,18 @@ async function runScraper() {
     console.log(`  ${result.shopName}: ${status}`);
   }
 
-  // Show sample images
-  console.log('\nSample product images:');
-  const sampledProducts = allProducts.filter(p => p.imageUrl).slice(0, 5);
+  // Show sample products with images and links
+  console.log('\nSample products:');
+  const sampledProducts = allProducts.filter(p => p.imageUrl && p.productUrl).slice(0, 5);
   for (const product of sampledProducts) {
-    console.log(`  - ${product.name.slice(0, 40)}...`);
-    console.log(`    ${product.imageUrl}`);
+    console.log(`  - ${product.name.slice(0, 50)}`);
+    console.log(`    Image: ${product.imageUrl}`);
+    console.log(`    Link:  ${product.productUrl}`);
   }
+
+  // Count products with valid URLs
+  const withUrls = allProducts.filter(p => p.productUrl && p.productUrl !== p.shopId).length;
+  console.log(`\nProducts with clickable links: ${withUrls}/${allProducts.length}`);
 }
 
 // Run the scraper
