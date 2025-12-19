@@ -37,9 +37,8 @@ const SHOPS = [
     id: 'reserved_mk',
     name: 'Reserved MK',
     urls: [
-      'https://www.reserved.com/mk/mk/spetsijalna-ponuda/',
-      'https://www.reserved.com/mk/mk/spetsijalna-ponuda/zheni/',
-      'https://www.reserved.com/mk/mk/spetsijalna-ponuda/mazhi/',
+      'https://www.reserved.com/mk/mk/zhena/sezonska-ponuda',
+      'https://www.reserved.com/mk/mk/mazh/sezonska-ponuda',
     ],
     category: 'fashion',
   },

@@ -363,9 +363,8 @@ export const reservedScraper = createGenericScraper({
   shopName: 'Reserved MK',
   baseUrl: 'https://www.reserved.com/mk/mk/',
   saleUrls: [
-    'https://www.reserved.com/mk/mk/spetsijalna-ponuda/',
-    'https://www.reserved.com/mk/mk/spetsijalna-ponuda/zheni/',
-    'https://www.reserved.com/mk/mk/spetsijalna-ponuda/mazhi/',
+    'https://www.reserved.com/mk/mk/zhena/sezonska-ponuda',
+    'https://www.reserved.com/mk/mk/mazh/sezonska-ponuda',
   ],
   affiliateParam: 'utm_source=stilix',
   defaultCategory: 'fashion',
