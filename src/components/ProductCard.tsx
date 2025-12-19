@@ -155,6 +155,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
             )}
           </View>
         )}
+
+        {/* View Product Button */}
+        <TouchableOpacity style={styles.viewButton} onPress={handlePress}>
+          <Text style={styles.viewButtonText}>View Product</Text>
+          <Ionicons name="open-outline" size={14} color={colors.white} />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -290,6 +296,22 @@ const styles = StyleSheet.create({
   moreSizes: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
+  },
+  viewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.md,
+    gap: spacing.xs,
+  },
+  viewButtonText: {
+    color: colors.white,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
   },
 });
 
