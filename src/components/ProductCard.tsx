@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../constants/theme';
@@ -29,14 +30,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
     return `${price.toLocaleString()} ${currency}`;
   };
 
+  const getProductUrl = () => {
+    return product.affiliateUrl || product.productUrl || '';
+  };
+
   const handlePress = async () => {
     if (onPress) {
       onPress(product);
       return;
     }
 
-    // Get the URL to open
-    const url = product.affiliateUrl || product.productUrl;
+    const url = getProductUrl();
 
     if (!url || url.length < 10) {
       Alert.alert('No Link', 'This product does not have a valid link.');
@@ -55,6 +59,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
     } catch (error) {
       console.error('Error opening URL:', error);
       Alert.alert('Error', `Could not open: ${url}`);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const url = getProductUrl();
+
+    if (!url || url.length < 10) {
+      Alert.alert('No Link', 'This product does not have a valid link to copy.');
+      return;
+    }
+
+    try {
+      if (Platform.OS === 'web') {
+        await navigator.clipboard.writeText(url);
+      } else {
+        await Clipboard.setStringAsync(url);
+      }
+      Alert.alert('Copied!', 'Link copied to clipboard');
+    } catch (error) {
+      console.error('Error copying URL:', error);
+      Alert.alert('Error', 'Could not copy link');
     }
   };
 
@@ -169,27 +194,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
           </View>
         )}
 
-        {/* View Product Button */}
-        <TouchableOpacity style={styles.viewButton} onPress={handlePress}>
-          <Text style={styles.viewButtonText}>View Product</Text>
-          <Ionicons name="open-outline" size={14} color={colors.white} />
-        </TouchableOpacity>
+        {/* Action Buttons */}
+        <View style={styles.buttonRow}>
+          {/* Open Link Button */}
+          <TouchableOpacity style={styles.viewButton} onPress={handlePress}>
+            <Ionicons name="open-outline" size={16} color={colors.white} />
+            <Text style={styles.viewButtonText}>Open</Text>
+          </TouchableOpacity>
+
+          {/* Copy Link Button */}
+          <TouchableOpacity style={styles.copyButton} onPress={handleCopyLink}>
+            <Ionicons name="copy-outline" size={16} color={colors.primary} />
+            <Text style={styles.copyButtonText}>Copy Link</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Show link domain */}
-        {(product.productUrl || product.affiliateUrl) && (
-          <View style={styles.linkContainer}>
-            <Ionicons name="link" size={12} color={colors.textMuted} />
-            <Text style={styles.linkText} numberOfLines={1}>
-              {(() => {
-                try {
-                  const url = product.affiliateUrl || product.productUrl;
-                  return new URL(url).hostname.replace('www.', '');
-                } catch {
-                  return 'Open link';
-                }
-              })()}
-            </Text>
-          </View>
+        {getProductUrl() && (
+          <Text style={styles.linkText} numberOfLines={1} selectable>
+            {getProductUrl()}
+          </Text>
         )}
       </View>
     </TouchableOpacity>
@@ -327,15 +351,20 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textMuted,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
   viewButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
-    marginTop: spacing.md,
     gap: spacing.xs,
   },
   viewButtonText: {
@@ -343,16 +372,29 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
   },
-  linkContainer: {
+  copyButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.sm,
+    backgroundColor: colors.white,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.primary,
     gap: spacing.xs,
+  },
+  copyButtonText: {
+    color: colors.primary,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
   },
   linkText: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
+    marginTop: spacing.sm,
+    textAlign: 'center',
   },
 });
 
