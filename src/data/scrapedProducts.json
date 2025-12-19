@@ -1,6 +1,49 @@
 {
-  "scrapedAt": null,
+  "scrapedAt": "2025-12-19T19:59:50.228Z",
   "totalProducts": 0,
-  "shopResults": [],
+  "shopResults": [
+    {
+      "shopId": "lc_waikiki",
+      "shopName": "LC Waikiki MK",
+      "success": true,
+      "productCount": 0
+    },
+    {
+      "shopId": "reserved_mk",
+      "shopName": "Reserved MK",
+      "success": true,
+      "productCount": 0
+    },
+    {
+      "shopId": "house_mk",
+      "shopName": "House MK",
+      "success": true,
+      "productCount": 0
+    },
+    {
+      "shopId": "cropp_mk",
+      "shopName": "Cropp MK",
+      "success": true,
+      "productCount": 0
+    },
+    {
+      "shopId": "sinsay_mk",
+      "shopName": "Sinsay MK",
+      "success": true,
+      "productCount": 0
+    },
+    {
+      "shopId": "office_shoes",
+      "shopName": "Office Shoes MK",
+      "success": true,
+      "productCount": 0
+    },
+    {
+      "shopId": "buzz_sneakers",
+      "shopName": "Buzz Sneakers MK",
+      "success": true,
+      "productCount": 0
+    }
+  ],
   "products": []
 }
