@@ -1,97 +1,6 @@
 {
   "shops": [
     {
-      "id": "anhoch",
-      "name": "Anhoch",
-      "logo": "https://www.anhoch.com/favicon.ico",
-      "website": "https://www.anhoch.com",
-      "category": "multi",
-      "currency": "MKD",
-      "isActive": true,
-      "affiliateBaseUrl": "https://www.anhoch.com",
-      "affiliateParam": "ref=stilix"
-    },
-    {
-      "id": "setec",
-      "name": "Setec",
-      "logo": "https://setec.mk/favicon.ico",
-      "website": "https://setec.mk",
-      "category": "multi",
-      "currency": "MKD",
-      "isActive": true,
-      "affiliateBaseUrl": "https://setec.mk",
-      "affiliateParam": "utm_source=stilix"
-    },
-    {
-      "id": "fashionmk",
-      "name": "Fashion.mk",
-      "logo": "https://fashion.mk/favicon.ico",
-      "website": "https://fashion.mk",
-      "category": "fashion",
-      "currency": "MKD",
-      "isActive": true
-    },
-    {
-      "id": "mango_mk",
-      "name": "Mango MK",
-      "logo": "https://shop.mango.com/favicon.ico",
-      "website": "https://shop.mango.com/mk",
-      "category": "fashion",
-      "currency": "MKD",
-      "isActive": true,
-      "affiliateBaseUrl": "https://shop.mango.com/mk",
-      "affiliateParam": "utm_source=stilix&utm_medium=affiliate"
-    },
-    {
-      "id": "zara_mk",
-      "name": "Zara MK",
-      "logo": "https://www.zara.com/favicon.ico",
-      "website": "https://www.zara.com/mk",
-      "category": "fashion",
-      "currency": "MKD",
-      "isActive": true
-    },
-    {
-      "id": "hm_mk",
-      "name": "H&M MK",
-      "logo": "https://www.hm.com/favicon.ico",
-      "website": "https://www2.hm.com/mk_mk",
-      "category": "fashion",
-      "currency": "MKD",
-      "isActive": true,
-      "affiliateBaseUrl": "https://www2.hm.com/mk_mk",
-      "affiliateParam": "utm_source=stilix"
-    },
-    {
-      "id": "office_shoes",
-      "name": "Office Shoes MK",
-      "logo": "https://www.officeshoes.mk/favicon.ico",
-      "website": "https://www.officeshoes.mk",
-      "category": "shoes",
-      "currency": "MKD",
-      "isActive": true,
-      "affiliateBaseUrl": "https://www.officeshoes.mk",
-      "affiliateParam": "ref=stilix"
-    },
-    {
-      "id": "buzz_sneakers",
-      "name": "Buzz Sneakers MK",
-      "logo": "https://www.buzzsneakers.mk/favicon.ico",
-      "website": "https://www.buzzsneakers.mk",
-      "category": "shoes",
-      "currency": "MKD",
-      "isActive": true
-    },
-    {
-      "id": "sportiko",
-      "name": "Sportiko",
-      "logo": "https://sportiko.mk/favicon.ico",
-      "website": "https://sportiko.mk",
-      "category": "multi",
-      "currency": "MKD",
-      "isActive": true
-    },
-    {
       "id": "lc_waikiki",
       "name": "LC Waikiki MK",
       "logo": "https://www.lcwaikiki.mk/favicon.ico",
@@ -100,6 +9,50 @@
       "currency": "MKD",
       "isActive": true,
       "affiliateBaseUrl": "https://www.lcwaikiki.mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "reserved_mk",
+      "name": "Reserved MK",
+      "logo": "https://www.reserved.com/favicon.ico",
+      "website": "https://www.reserved.com/mk",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.reserved.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "house_mk",
+      "name": "House MK",
+      "logo": "https://www.housebrand.com/favicon.ico",
+      "website": "https://www.housebrand.com/mk",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.housebrand.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "cropp_mk",
+      "name": "Cropp MK",
+      "logo": "https://www.cropp.com/favicon.ico",
+      "website": "https://www.cropp.com/mk",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.cropp.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "sinsay_mk",
+      "name": "Sinsay MK",
+      "logo": "https://www.sinsay.com/favicon.ico",
+      "website": "https://www.sinsay.com/mk",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.sinsay.com/mk",
       "affiliateParam": "utm_source=stilix"
     },
     {
@@ -112,17 +65,48 @@
       "isActive": true
     },
     {
-      "id": "reserved_mk",
-      "name": "Reserved MK",
-      "logo": "https://www.reserved.com/favicon.ico",
-      "website": "https://www.reserved.com/mk",
+      "id": "defacto_mk",
+      "name": "DeFacto MK",
+      "logo": "https://www.defacto.com/favicon.ico",
+      "website": "https://www.defacto.com.mk",
       "category": "fashion",
       "currency": "MKD",
       "isActive": true,
-      "affiliateBaseUrl": "https://www.reserved.com/mk",
+      "affiliateBaseUrl": "https://www.defacto.com.mk",
       "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "office_shoes",
+      "name": "Office Shoes MK",
+      "logo": "https://officeshoesmk.com/favicon.ico",
+      "website": "https://officeshoesmk.com",
+      "category": "shoes",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://officeshoesmk.com",
+      "affiliateParam": "ref=stilix"
+    },
+    {
+      "id": "buzz_sneakers",
+      "name": "Buzz Sneakers MK",
+      "logo": "https://www.buzzsneakers.mk/favicon.ico",
+      "website": "https://www.buzzsneakers.mk",
+      "category": "shoes",
+      "currency": "MKD",
+      "isActive": true
+    },
+    {
+      "id": "mass_mk",
+      "name": "Mass MK",
+      "logo": "https://mass.mk/favicon.ico",
+      "website": "https://mass.mk",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://mass.mk",
+      "affiliateParam": "ref=stilix"
     }
   ],
   "lastUpdated": "2025-01-15",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

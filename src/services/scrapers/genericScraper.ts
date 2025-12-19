@@ -344,7 +344,7 @@ function extractHtmlProducts(
   return products;
 }
 
-// Pre-configured scrapers for various shops
+// Pre-configured scrapers for fashion shops
 export const buzzSneakersScraper = createGenericScraper({
   shopId: 'buzz_sneakers',
   shopName: 'Buzz Sneakers MK',
@@ -354,28 +354,6 @@ export const buzzSneakersScraper = createGenericScraper({
     'https://www.buzzsneakers.mk/mk/outlet',
   ],
   defaultCategory: 'shoes',
-});
-
-export const sportikoScraper = createGenericScraper({
-  shopId: 'sportiko',
-  shopName: 'Sportiko',
-  baseUrl: 'https://sportiko.mk',
-  saleUrls: [
-    'https://sportiko.mk/category/sale',
-    'https://sportiko.mk/akcija',
-  ],
-  defaultCategory: 'sportswear',
-});
-
-export const setecScraper = createGenericScraper({
-  shopId: 'setec',
-  shopName: 'Setec',
-  baseUrl: 'https://setec.mk',
-  saleUrls: [
-    'https://setec.mk/index.php?route=product/special',
-  ],
-  affiliateParam: 'utm_source=stilix',
-  defaultCategory: 'accessories',
 });
 
 export const kotonScraper = createGenericScraper({
@@ -395,7 +373,68 @@ export const reservedScraper = createGenericScraper({
   baseUrl: 'https://www.reserved.com',
   saleUrls: [
     'https://www.reserved.com/mk/en/sale-all',
+    'https://www.reserved.com/mk/mk/sale-all',
   ],
   affiliateParam: 'utm_source=stilix',
+  defaultCategory: 'fashion',
+});
+
+export const houseScraper = createGenericScraper({
+  shopId: 'house_mk',
+  shopName: 'House MK',
+  baseUrl: 'https://www.housebrand.com',
+  saleUrls: [
+    'https://www.housebrand.com/mk/mk/sale-all',
+    'https://www.housebrand.com/mk/en/sale-all',
+  ],
+  affiliateParam: 'utm_source=stilix',
+  defaultCategory: 'fashion',
+});
+
+export const croppScraper = createGenericScraper({
+  shopId: 'cropp_mk',
+  shopName: 'Cropp MK',
+  baseUrl: 'https://www.cropp.com',
+  saleUrls: [
+    'https://www.cropp.com/mk/mk/sale-all',
+    'https://www.cropp.com/mk/en/sale-all',
+  ],
+  affiliateParam: 'utm_source=stilix',
+  defaultCategory: 'fashion',
+});
+
+export const sinsayScraper = createGenericScraper({
+  shopId: 'sinsay_mk',
+  shopName: 'Sinsay MK',
+  baseUrl: 'https://www.sinsay.com',
+  saleUrls: [
+    'https://www.sinsay.com/mk/mk/sale-all',
+    'https://www.sinsay.com/mk/en/sale-all',
+  ],
+  affiliateParam: 'utm_source=stilix',
+  defaultCategory: 'fashion',
+});
+
+export const defactoScraper = createGenericScraper({
+  shopId: 'defacto_mk',
+  shopName: 'DeFacto MK',
+  baseUrl: 'https://www.defacto.com.mk',
+  saleUrls: [
+    'https://www.defacto.com.mk/indirim',
+    'https://www.defacto.com.mk/sale',
+  ],
+  affiliateParam: 'utm_source=stilix',
+  defaultCategory: 'fashion',
+});
+
+export const massScraper = createGenericScraper({
+  shopId: 'mass_mk',
+  shopName: 'Mass MK',
+  baseUrl: 'https://mass.mk',
+  saleUrls: [
+    'https://mass.mk/sale',
+    'https://mass.mk/outlet',
+  ],
+  affiliateParam: 'ref=stilix',
   defaultCategory: 'fashion',
 });
