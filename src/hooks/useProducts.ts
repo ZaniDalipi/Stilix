@@ -16,6 +16,7 @@ interface UseProductsResult {
   totalFilteredProducts: number;
   scrapeResults: ScraperResult[];
   usedMockData: boolean;
+  usedPreScrapedData: boolean;
 }
 
 const initialFilters: FilterOptions = {
@@ -35,6 +36,7 @@ export const useProducts = (): UseProductsResult => {
   const [filters, setFilters] = useState<FilterOptions>(initialFilters);
   const [scrapeResults, setScrapeResults] = useState<ScraperResult[]>([]);
   const [usedMockData, setUsedMockData] = useState(false);
+  const [usedPreScrapedData, setUsedPreScrapedData] = useState(false);
 
   // Get shops from configuration
   const shops: Shop[] = useMemo(() => {
@@ -58,13 +60,16 @@ export const useProducts = (): UseProductsResult => {
       setProducts(result.products);
       setScrapeResults(result.results);
       setUsedMockData(result.usedMock);
+      setUsedPreScrapedData(result.usedPreScraped);
 
       // Log scraping statistics
       const successfulShops = result.results.filter(r => r.success).length;
       const totalProducts = result.products.length;
       console.log(`Fetched ${totalProducts} products from ${successfulShops}/${result.results.length} shops`);
 
-      if (result.usedMock) {
+      if (result.usedPreScraped) {
+        console.log('Note: Using pre-scraped data from daily scraper');
+      } else if (result.usedMock) {
         console.log('Note: Using mock data as fallback');
       }
 
@@ -187,6 +192,7 @@ export const useProducts = (): UseProductsResult => {
     totalFilteredProducts: filteredProducts.length,
     scrapeResults,
     usedMockData,
+    usedPreScrapedData,
   };
 };
 

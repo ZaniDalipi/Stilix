@@ -3,9 +3,35 @@ import { ScraperResult, delay } from './scraperBase';
 import { allScrapers, getScraperByShopId } from './scrapers';
 import { mockProducts } from '../data/mockProducts';
 import shopsData from '../data/shops.json';
+import scrapedData from '../data/scrapedProducts.json';
 
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const SCRAPED_DATA_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours - consider scraped data fresh
+
+/**
+ * Check if pre-scraped data is fresh (within 24 hours)
+ */
+function isScrapedDataFresh(): boolean {
+  if (!scrapedData.scrapedAt) return false;
+  const scrapedTime = new Date(scrapedData.scrapedAt).getTime();
+  return Date.now() - scrapedTime < SCRAPED_DATA_MAX_AGE;
+}
+
+/**
+ * Get products from pre-scraped data file
+ */
+function getScrapedProducts(): Product[] {
+  if (!scrapedData.products || !Array.isArray(scrapedData.products)) {
+    return [];
+  }
+
+  // Convert scraped data to Product type (ensure dates are Date objects)
+  return scrapedData.products.map((p: Record<string, unknown>) => ({
+    ...p,
+    fetchedAt: p.fetchedAt ? new Date(p.fetchedAt as string) : new Date(),
+  })) as Product[];
+}
 const MAX_CONCURRENT_SCRAPERS = 3;
 const SCRAPER_TIMEOUT = 30000; // 30 seconds
 const RETRY_ATTEMPTS = 2;
@@ -172,7 +198,7 @@ async function scrapeMultipleShops(shopIds: string[]): Promise<ScraperResult[]> 
 
 /**
  * Fetch all products from all active shops
- * Returns real scraped data when available, falls back to mock data
+ * Priority: 1. Pre-scraped data (if fresh), 2. Live scraping, 3. Mock data
  */
 export async function fetchAllProducts(
   options: {
@@ -184,12 +210,40 @@ export async function fetchAllProducts(
   products: Product[];
   results: ScraperResult[];
   usedMock: boolean;
+  usedPreScraped: boolean;
 }> {
   const {
     forceRefresh = false,
     shopIds,
     useMockFallback = true,
   } = options;
+
+  // Check for fresh pre-scraped data first (unless force refresh)
+  if (!forceRefresh && isScrapedDataFresh()) {
+    const scrapedProducts = getScrapedProducts();
+
+    if (scrapedProducts.length > 0) {
+      // Filter by shopIds if specified
+      const filteredProducts = shopIds
+        ? scrapedProducts.filter(p => shopIds.includes(p.shopId))
+        : scrapedProducts;
+
+      console.log(`Using ${filteredProducts.length} pre-scraped products from ${scrapedData.scrapedAt}`);
+
+      return {
+        products: filteredProducts,
+        results: (scrapedData.shopResults || []).map((r: Record<string, unknown>) => ({
+          products: [],
+          success: r.success as boolean,
+          error: r.error as string | undefined,
+          shopId: r.shopId as string,
+          scrapedAt: scrapedData.scrapedAt ? new Date(scrapedData.scrapedAt) : new Date(),
+        })),
+        usedMock: false,
+        usedPreScraped: true,
+      };
+    }
+  }
 
   // Clear cache if force refresh
   if (forceRefresh) {
@@ -200,7 +254,7 @@ export async function fetchAllProducts(
   const activeShops = getActiveShopsWithScrapers();
   const targetShopIds = shopIds || activeShops.map(s => s.id);
 
-  console.log(`Starting scrape for ${targetShopIds.length} shops...`);
+  console.log(`Starting live scrape for ${targetShopIds.length} shops...`);
 
   // Scrape all target shops
   const results = await scrapeMultipleShops(targetShopIds);
@@ -225,6 +279,7 @@ export async function fetchAllProducts(
       products: mockProducts,
       results,
       usedMock: true,
+      usedPreScraped: false,
     };
   }
 
@@ -248,6 +303,7 @@ export async function fetchAllProducts(
     products: allProducts,
     results,
     usedMock: false,
+    usedPreScraped: false,
   };
 }
 
