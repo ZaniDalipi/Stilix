@@ -12,9 +12,9 @@ const SHOP_ID = 'office_shoes';
 const SHOP_NAME = 'Office Shoes MK';
 const BASE_URL = 'https://www.officeshoes.mk';
 const SALE_URLS = [
-  'https://www.officeshoes.mk/popust/',
-  'https://www.officeshoes.mk/akcija/',
-  'https://www.officeshoes.mk/outlet/',
+  'https://www.officeshoes.mk/mk/akcija',
+  'https://www.officeshoes.mk/mk/akcija/zenski',
+  'https://www.officeshoes.mk/mk/akcija/mashi',
 ];
 
 /**

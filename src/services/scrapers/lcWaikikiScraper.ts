@@ -10,10 +10,11 @@ import {
 
 const SHOP_ID = 'lc_waikiki';
 const SHOP_NAME = 'LC Waikiki MK';
-const BASE_URL = 'https://www.lcwaikiki.mk';
+const BASE_URL = 'https://www.lcwaikiki.com';
 const SALE_URLS = [
-  'https://www.lcwaikiki.mk/mk-MK/MK/katalog/outlet',
-  'https://www.lcwaikiki.mk/mk-MK/MK/katalog/popusti',
+  'https://www.lcwaikiki.com/mk-MK/MK/sale',
+  'https://www.lcwaikiki.com/mk-MK/MK/sale/mens',
+  'https://www.lcwaikiki.com/mk-MK/MK/sale/womens',
 ];
 
 /**

@@ -3,12 +3,12 @@
     {
       "id": "lc_waikiki",
       "name": "LC Waikiki MK",
-      "logo": "https://www.lcwaikiki.mk/favicon.ico",
-      "website": "https://www.lcwaikiki.mk",
+      "logo": "https://www.lcwaikiki.com/favicon.ico",
+      "website": "https://www.lcwaikiki.com/mk-MK/MK/",
       "category": "fashion",
       "currency": "MKD",
       "isActive": true,
-      "affiliateBaseUrl": "https://www.lcwaikiki.mk",
+      "affiliateBaseUrl": "https://www.lcwaikiki.com/mk-MK/MK",
       "affiliateParam": "utm_source=stilix"
     },
     {
@@ -69,12 +69,12 @@
     {
       "id": "buzz_sneakers",
       "name": "Buzz Sneakers MK",
-      "logo": "https://www.buzzsneakers.mk/favicon.ico",
-      "website": "https://www.buzzsneakers.mk",
+      "logo": "https://www.buzzsneakers.com/favicon.ico",
+      "website": "https://www.buzzsneakers.com/mk/",
       "category": "shoes",
       "currency": "MKD",
       "isActive": true,
-      "affiliateBaseUrl": "https://www.buzzsneakers.mk",
+      "affiliateBaseUrl": "https://www.buzzsneakers.com/mk",
       "affiliateParam": "utm_source=stilix"
     }
   ],
