@@ -135,11 +135,36 @@ function fetchUrl(url) {
   });
 }
 
-// Extract price from text
+// Extract price from text (handles Macedonian format: 1.299,00 ден)
 function extractPrice(text) {
   if (!text) return 0;
-  const cleaned = text.replace(/[^0-9.,]/g, '').replace(/\./g, '').replace(',', '.');
-  return parseFloat(cleaned) || 0;
+
+  // Remove currency symbols and text
+  let cleaned = text.replace(/ден|MKD|EUR|€|денари/gi, '').trim();
+
+  // Handle Macedonian format: 1.299,00 or 1.299
+  // Period is thousands separator, comma is decimal
+  if (cleaned.includes('.') && cleaned.includes(',')) {
+    // Format: 1.299,00 -> remove dots, replace comma with dot
+    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+  } else if (cleaned.includes('.')) {
+    // Could be 1.299 (thousands) or 12.99 (decimal)
+    const parts = cleaned.split('.');
+    if (parts.length === 2 && parts[1].length === 3) {
+      // 1.299 format - dot is thousands separator
+      cleaned = cleaned.replace('.', '');
+    }
+    // else: 12.99 format - dot is decimal, keep as is
+  } else if (cleaned.includes(',')) {
+    // 1299,00 - comma is decimal
+    cleaned = cleaned.replace(',', '.');
+  }
+
+  // Remove any remaining non-numeric except decimal point
+  cleaned = cleaned.replace(/[^0-9.]/g, '');
+
+  const price = parseFloat(cleaned) || 0;
+  return price;
 }
 
 // Calculate discount percentage
@@ -389,12 +414,35 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
         }
       }
 
-      // Extract prices
-      const priceMatches = [...productHtml.matchAll(/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/g)];
-      const prices = priceMatches.map(m => extractPrice(m[1])).filter(p => p > 50).sort((a, b) => b - a);
+      // Extract prices - look for price patterns in MKD format
+      const pricePatterns = [
+        // Price with currency: "1.299 ден", "1.299,00 MKD"
+        /(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)\s*(?:ден|MKD|денари)/gi,
+        // Price in spans/divs with price class
+        /class="[^"]*price[^"]*"[^>]*>([^<]*\d[^<]*)</gi,
+        // Data attribute prices
+        /data-price="([^"]+)"/gi,
+        // General number patterns (4+ digits likely to be MKD price)
+        /(\d{1,3}\.\d{3}(?:,\d{2})?)/g,
+        /(\d{4,})/g,
+      ];
 
-      const originalPrice = prices[0] || 0;
-      const salePrice = prices.length > 1 ? prices[prices.length - 1] : 0;
+      const foundPrices = [];
+      for (const pattern of pricePatterns) {
+        let match;
+        while ((match = pattern.exec(productHtml)) !== null) {
+          const price = extractPrice(match[1]);
+          if (price >= 100 && price <= 50000 && !foundPrices.includes(price)) {
+            foundPrices.push(price);
+          }
+        }
+      }
+
+      // Sort descending - original price should be higher
+      foundPrices.sort((a, b) => b - a);
+
+      const originalPrice = foundPrices[0] || 0;
+      const salePrice = foundPrices.length > 1 ? foundPrices[foundPrices.length - 1] : 0;
 
       // Extract URL - comprehensive patterns for product links
       const linkPatterns = [
