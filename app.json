@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Stilix",
+    "slug": "stilix",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "stilix",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF385C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stilix.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF385C"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.stilix.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "Stilix - Macedonian Fashion Deals"
+    },
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "description": "Find the best fashion deals from Macedonian shops"
+    }
+  }
+}
