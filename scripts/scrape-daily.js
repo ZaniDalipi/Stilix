@@ -152,6 +152,8 @@ function calculateDiscount(original, sale) {
 // Normalize image URL
 function normalizeImageUrl(url, baseUrl) {
   if (!url) return '';
+  // Clean up the URL
+  url = url.trim();
   if (url.startsWith('http')) return url;
   if (url.startsWith('//')) return `https:${url}`;
   if (url.startsWith('/')) {
@@ -159,6 +161,123 @@ function normalizeImageUrl(url, baseUrl) {
     return `${base.origin}${url}`;
   }
   return `${baseUrl.replace(/\/$/, '')}/${url}`;
+}
+
+// Check if URL looks like a valid product image
+function isValidProductImage(url) {
+  if (!url) return false;
+  const lowerUrl = url.toLowerCase();
+
+  // Skip placeholder/loading images
+  const skipPatterns = [
+    'placeholder', 'loading', 'blank', 'empty', 'default',
+    'no-image', 'noimage', 'no_image', 'spinner', 'loader',
+    'spacer', 'transparent', 'pixel', '1x1', 'data:image',
+    'svg+xml', 'base64,', 'icon', 'logo', 'favicon'
+  ];
+
+  if (skipPatterns.some(pattern => lowerUrl.includes(pattern))) {
+    return false;
+  }
+
+  // Must have valid image extension or be from CDN
+  const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const cdnPatterns = ['cdn', 'images', 'media', 'assets', 'static', 'img'];
+
+  const hasValidExtension = validExtensions.some(ext => lowerUrl.includes(ext));
+  const isFromCdn = cdnPatterns.some(pattern => lowerUrl.includes(pattern));
+
+  return hasValidExtension || isFromCdn;
+}
+
+// Extract all possible image URLs from a product HTML block
+function extractImageUrls(productHtml, baseUrl) {
+  const images = [];
+
+  // Patterns for finding images (ordered by priority)
+  const patterns = [
+    // Data attributes for lazy loading (highest priority - these are the real images)
+    /data-src="([^"]+)"/gi,
+    /data-original="([^"]+)"/gi,
+    /data-lazy="([^"]+)"/gi,
+    /data-lazy-src="([^"]+)"/gi,
+    /data-image="([^"]+)"/gi,
+    /data-bg="([^"]+)"/gi,
+    /data-srcset="([^"]+)"/gi,
+
+    // Srcset (get the largest image)
+    /srcset="([^"]+)"/gi,
+
+    // Regular src (lower priority as it might be placeholder)
+    /src="([^"]+\.(?:jpg|jpeg|png|webp|gif)[^"]*)"/gi,
+
+    // Background image in style
+    /background-image:\s*url\(['"]?([^'")\s]+)['"]?\)/gi,
+    /background:\s*[^;]*url\(['"]?([^'")\s]+)['"]?\)/gi,
+
+    // Content attribute (used in some frameworks)
+    /content="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi,
+  ];
+
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(productHtml)) !== null) {
+      let url = match[1];
+
+      // Handle srcset - get the largest image
+      if (url.includes(',') && url.includes(' ')) {
+        const srcsetParts = url.split(',').map(s => s.trim());
+        // Get the last (usually largest) image
+        const lastPart = srcsetParts[srcsetParts.length - 1];
+        url = lastPart.split(' ')[0];
+      }
+
+      const normalizedUrl = normalizeImageUrl(url, baseUrl);
+      if (isValidProductImage(normalizedUrl) && !images.includes(normalizedUrl)) {
+        images.push(normalizedUrl);
+      }
+    }
+  }
+
+  return images;
+}
+
+// Extract best image from JSON-LD item
+function extractJsonLdImage(item, baseUrl) {
+  // Handle array of images
+  if (Array.isArray(item.image)) {
+    for (const img of item.image) {
+      const url = typeof img === 'object' ? (img.url || img.contentUrl || img['@id']) : img;
+      const normalized = normalizeImageUrl(url, baseUrl);
+      if (isValidProductImage(normalized)) {
+        return normalized;
+      }
+    }
+  }
+
+  // Handle single image (could be string or object)
+  if (item.image) {
+    const img = item.image;
+    const url = typeof img === 'object' ? (img.url || img.contentUrl || img['@id']) : img;
+    const normalized = normalizeImageUrl(url, baseUrl);
+    if (isValidProductImage(normalized)) {
+      return normalized;
+    }
+  }
+
+  // Try other image properties
+  const imageProps = ['thumbnail', 'primaryImage', 'mainImage', 'photo'];
+  for (const prop of imageProps) {
+    if (item[prop]) {
+      const url = typeof item[prop] === 'object' ? item[prop].url : item[prop];
+      const normalized = normalizeImageUrl(url, baseUrl);
+      if (isValidProductImage(normalized)) {
+        return normalized;
+      }
+    }
+  }
+
+  return '';
 }
 
 // Parse JSON-LD from HTML
@@ -179,14 +298,17 @@ function extractJsonLdProducts(html, shopId, shopName, baseUrl) {
         const originalPrice = parseFloat(offer.highPrice || offer.price) || 0;
         const salePrice = parseFloat(offer.lowPrice || offer.price) || 0;
 
-        if (salePrice > 0 && originalPrice > salePrice) {
+        // Extract image with improved logic
+        const imageUrl = extractJsonLdImage(item, baseUrl);
+
+        if (salePrice > 0 && originalPrice > salePrice && imageUrl) {
           products.push({
             id: `${shopId}-${item.sku || item.name || Date.now()}`.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
             shopId,
             shopName,
             name: item.name || '',
             description: item.description || '',
-            imageUrl: normalizeImageUrl(Array.isArray(item.image) ? item.image[0] : item.image, baseUrl),
+            imageUrl,
             originalPrice,
             salePrice,
             discountPercentage: calculateDiscount(originalPrice, salePrice),
@@ -223,12 +345,15 @@ function extractProductsFromData(data) {
 function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
   const products = [];
 
-  // Find product containers
+  // Find product containers - expanded patterns
   const productPatterns = [
     /<article[^>]*class="[^"]*product[^"]*"[^>]*>([\s\S]*?)<\/article>/gi,
     /<div[^>]*class="[^"]*product-card[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi,
     /<div[^>]*class="[^"]*product-item[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi,
+    /<div[^>]*class="[^"]*product-box[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi,
+    /<div[^>]*class="[^"]*item-product[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi,
     /<li[^>]*class="[^"]*product[^"]*"[^>]*>([\s\S]*?)<\/li>/gi,
+    /<div[^>]*data-product[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi,
   ];
 
   let productHtmls = [];
@@ -241,15 +366,29 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
 
   for (const productHtml of productHtmls.slice(0, MAX_PRODUCTS_PER_SHOP)) {
     try {
-      // Extract image
-      const imgMatch = productHtml.match(/(?:data-src|src)="([^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i);
-      const imageUrl = imgMatch ? normalizeImageUrl(imgMatch[1], baseUrl) : '';
+      // Extract image using improved function
+      const images = extractImageUrls(productHtml, baseUrl);
+      const imageUrl = images[0] || '';
 
-      // Extract name
-      const nameMatch = productHtml.match(/class="[^"]*product-(?:name|title)[^"]*"[^>]*>([^<]+)/i) ||
-                       productHtml.match(/<h[2-4][^>]*>[\s\S]*?<a[^>]*>([^<]+)/i) ||
-                       productHtml.match(/title="([^"]+)"/i);
-      const name = nameMatch ? nameMatch[1].trim() : '';
+      // Extract name - more patterns
+      const namePatterns = [
+        /class="[^"]*product-(?:name|title)[^"]*"[^>]*>([^<]+)/i,
+        /class="[^"]*name[^"]*"[^>]*>([^<]+)/i,
+        /class="[^"]*title[^"]*"[^>]*>[\s\S]*?<a[^>]*>([^<]+)/i,
+        /<h[2-4][^>]*>[\s\S]*?<a[^>]*>([^<]+)/i,
+        /<h[2-4][^>]*class="[^"]*"[^>]*>([^<]+)/i,
+        /title="([^"]{10,})"/i,
+        /alt="([^"]{10,})"/i,
+      ];
+
+      let name = '';
+      for (const pattern of namePatterns) {
+        const match = productHtml.match(pattern);
+        if (match && match[1].trim().length > 5) {
+          name = match[1].trim().replace(/\s+/g, ' ');
+          break;
+        }
+      }
 
       // Extract prices
       const priceMatches = [...productHtml.matchAll(/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/g)];
@@ -258,9 +397,27 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
       const originalPrice = prices[0] || 0;
       const salePrice = prices.length > 1 ? prices[prices.length - 1] : 0;
 
-      // Extract URL
-      const linkMatch = productHtml.match(/href="([^"]+)"/i);
-      const productUrl = linkMatch ? normalizeImageUrl(linkMatch[1], baseUrl) : baseUrl;
+      // Extract URL - more patterns
+      const linkPatterns = [
+        /href="([^"]*\/product[^"]*)"/i,
+        /href="([^"]*\/p\/[^"]*)"/i,
+        /href="([^"]*\/item[^"]*)"/i,
+        /href="(https?:\/\/[^"]+)"/i,
+        /href="([^"]+)"/i,
+      ];
+
+      let productUrl = baseUrl;
+      for (const pattern of linkPatterns) {
+        const match = productHtml.match(pattern);
+        if (match && !match[1].includes('javascript:') && !match[1].includes('#')) {
+          productUrl = normalizeImageUrl(match[1], baseUrl);
+          break;
+        }
+      }
+
+      // Extract brand
+      const brandMatch = productHtml.match(/class="[^"]*brand[^"]*"[^>]*>([^<]+)/i);
+      const brand = brandMatch ? brandMatch[1].trim() : undefined;
 
       if (name && imageUrl && originalPrice > 0 && salePrice > 0 && originalPrice > salePrice) {
         products.push({
@@ -276,6 +433,7 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
           productUrl,
           affiliateUrl: `${productUrl}${productUrl.includes('?') ? '&' : '?'}utm_source=stilix`,
           category,
+          brand,
           inStock: true,
           fetchedAt: new Date().toISOString(),
         });
@@ -301,12 +459,14 @@ async function scrapeShop(shop) {
 
       // Try JSON-LD first
       let products = extractJsonLdProducts(html, shop.id, shop.name, url);
-      console.log(`    Found ${products.length} products from JSON-LD`);
+      const jsonLdWithImages = products.filter(p => p.imageUrl).length;
+      console.log(`    Found ${products.length} products from JSON-LD (${jsonLdWithImages} with images)`);
 
       // Fallback to HTML parsing
       if (products.length === 0) {
         products = extractHtmlProducts(html, shop.id, shop.name, url, shop.category);
-        console.log(`    Found ${products.length} products from HTML`);
+        const htmlWithImages = products.filter(p => p.imageUrl).length;
+        console.log(`    Found ${products.length} products from HTML (${htmlWithImages} with images)`);
       }
 
       // Deduplicate
@@ -321,7 +481,8 @@ async function scrapeShop(shop) {
     }
   }
 
-  console.log(`  Total: ${allProducts.length} unique products`);
+  const withImages = allProducts.filter(p => p.imageUrl).length;
+  console.log(`  Total: ${allProducts.length} unique products (${withImages} with images)`);
   return allProducts;
 }
 
@@ -359,10 +520,14 @@ async function runScraper() {
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
+  // Count products with images
+  const productsWithImages = allProducts.filter(p => p.imageUrl).length;
+
   // Save results
   const output = {
     scrapedAt: new Date().toISOString(),
     totalProducts: allProducts.length,
+    productsWithImages,
     shopResults: results,
     products: allProducts,
   };
@@ -371,6 +536,7 @@ async function runScraper() {
   console.log('\n' + '='.repeat(60));
   console.log(`Scraping complete!`);
   console.log(`Total products: ${allProducts.length}`);
+  console.log(`Products with images: ${productsWithImages} (${Math.round(productsWithImages/allProducts.length*100) || 0}%)`);
   console.log(`Output saved to: ${OUTPUT_FILE}`);
   console.log('='.repeat(60));
 
@@ -379,6 +545,14 @@ async function runScraper() {
   for (const result of results) {
     const status = result.success ? `✓ ${result.productCount} products` : `✗ ${result.error}`;
     console.log(`  ${result.shopName}: ${status}`);
+  }
+
+  // Show sample images
+  console.log('\nSample product images:');
+  const sampledProducts = allProducts.filter(p => p.imageUrl).slice(0, 5);
+  for (const product of sampledProducts) {
+    console.log(`  - ${product.name.slice(0, 40)}...`);
+    console.log(`    ${product.imageUrl}`);
   }
 }
 
