@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Product, Shop, FilterOptions, LoadingState } from '../types';
-import { mockProducts } from '../data/mockProducts';
-import shopsData from '../data/shops.json';
+import { fetchAllProducts, getShops, clearCache } from '../services/productService';
+import { ScraperResult } from '../services/scraperBase';
 
 interface UseProductsResult {
   products: Product[];
@@ -11,9 +11,11 @@ interface UseProductsResult {
   error: string | null;
   filters: FilterOptions;
   updateFilters: (newFilters: Partial<FilterOptions>) => void;
-  refreshProducts: () => Promise<void>;
+  refreshProducts: (forceRefresh?: boolean) => Promise<void>;
   totalProducts: number;
   totalFilteredProducts: number;
+  scrapeResults: ScraperResult[];
+  usedMockData: boolean;
 }
 
 const initialFilters: FilterOptions = {
@@ -31,59 +33,55 @@ export const useProducts = (): UseProductsResult => {
   const [loading, setLoading] = useState<LoadingState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>(initialFilters);
+  const [scrapeResults, setScrapeResults] = useState<ScraperResult[]>([]);
+  const [usedMockData, setUsedMockData] = useState(false);
 
-  // Get shops from JSON data
+  // Get shops from configuration
   const shops: Shop[] = useMemo(() => {
-    return shopsData.shops as Shop[];
+    return getShops();
   }, []);
 
-  // Fetch products from all shops
-  const fetchProducts = useCallback(async () => {
+  // Fetch products from all shops using real scrapers
+  const fetchProducts = useCallback(async (forceRefresh = false) => {
     setLoading('loading');
     setError(null);
 
     try {
-      // In production, this would make actual API calls to shop endpoints
-      // For now, we use mock data to demonstrate the app
-      await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate network delay
+      console.log('Starting product fetch from Macedonian shops...');
 
-      // Simulate fetching from multiple shops
-      const activeShops = shops.filter((shop) => shop.isActive);
-      console.log(`Fetching products from ${activeShops.length} shops...`);
+      // Fetch products using the scraper service
+      const result = await fetchAllProducts({
+        forceRefresh,
+        useMockFallback: true,
+      });
 
-      // In a real implementation, you would:
-      // 1. Loop through each shop
-      // 2. Make a fetch request to shop.apiEndpoint or shop.rssUrl
-      // 3. Parse the response and normalize to Product type
-      // 4. Handle errors per-shop gracefully
+      setProducts(result.products);
+      setScrapeResults(result.results);
+      setUsedMockData(result.usedMock);
 
-      // For example:
-      // const fetchPromises = activeShops.map(async (shop) => {
-      //   try {
-      //     if (shop.apiEndpoint) {
-      //       const response = await fetch(shop.apiEndpoint);
-      //       const data = await response.json();
-      //       return normalizeProducts(data, shop);
-      //     } else if (shop.rssUrl) {
-      //       const response = await fetch(shop.rssUrl);
-      //       const xml = await response.text();
-      //       return parseRssToProducts(xml, shop);
-      //     }
-      //   } catch (error) {
-      //     console.error(`Error fetching from ${shop.name}:`, error);
-      //     return [];
-      //   }
-      // });
-      // const results = await Promise.all(fetchPromises);
-      // const allProducts = results.flat();
+      // Log scraping statistics
+      const successfulShops = result.results.filter(r => r.success).length;
+      const totalProducts = result.products.length;
+      console.log(`Fetched ${totalProducts} products from ${successfulShops}/${result.results.length} shops`);
 
-      setProducts(mockProducts);
+      if (result.usedMock) {
+        console.log('Note: Using mock data as fallback');
+      }
+
+      // Check for any errors
+      const failedShops = result.results.filter(r => !r.success);
+      if (failedShops.length > 0 && !result.usedMock) {
+        const failedNames = failedShops.map(r => r.shopId).join(', ');
+        console.warn(`Some shops failed to scrape: ${failedNames}`);
+      }
+
       setLoading('success');
     } catch (err) {
+      console.error('Product fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
       setLoading('error');
     }
-  }, [shops]);
+  }, []);
 
   // Initial fetch
   useEffect(() => {
@@ -168,9 +166,12 @@ export const useProducts = (): UseProductsResult => {
     }));
   }, []);
 
-  // Refresh products
-  const refreshProducts = useCallback(async () => {
-    await fetchProducts();
+  // Refresh products (can force refresh to bypass cache)
+  const refreshProducts = useCallback(async (forceRefresh = true) => {
+    if (forceRefresh) {
+      clearCache();
+    }
+    await fetchProducts(forceRefresh);
   }, [fetchProducts]);
 
   return {
@@ -184,6 +185,8 @@ export const useProducts = (): UseProductsResult => {
     refreshProducts,
     totalProducts: products.length,
     totalFilteredProducts: filteredProducts.length,
+    scrapeResults,
+    usedMockData,
   };
 };
 

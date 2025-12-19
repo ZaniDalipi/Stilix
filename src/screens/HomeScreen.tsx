@@ -39,6 +39,8 @@ export const HomeScreen: React.FC = () => {
     refreshProducts,
     totalProducts,
     totalFilteredProducts,
+    scrapeResults,
+    usedMockData,
   } = useProducts();
 
   const [showFiltersModal, setShowFiltersModal] = useState(false);
@@ -131,9 +133,31 @@ export const HomeScreen: React.FC = () => {
     );
   }, [loading, handleClearFilters]);
 
+  // Calculate scraping stats
+  const successfulScrapes = scrapeResults.filter(r => r.success).length;
+  const totalScrapes = scrapeResults.length;
+
   const renderHeader = useCallback(
     () => (
       <>
+        {/* Data source indicator */}
+        {loading === 'success' && (
+          <View style={styles.dataSourceBanner}>
+            <Ionicons
+              name={usedMockData ? 'cloud-offline-outline' : 'cloud-done-outline'}
+              size={14}
+              color={usedMockData ? colors.warning : colors.success}
+            />
+            <Text style={[
+              styles.dataSourceText,
+              { color: usedMockData ? colors.warning : colors.success }
+            ]}>
+              {usedMockData
+                ? 'Demo mode - Pull to refresh for live data'
+                : `Live data from ${successfulScrapes}/${totalScrapes} shops`}
+            </Text>
+          </View>
+        )}
         {/* Results count */}
         <View style={styles.resultsHeader}>
           <Text style={styles.resultsCount}>
@@ -147,7 +171,7 @@ export const HomeScreen: React.FC = () => {
         </View>
       </>
     ),
-    [totalFilteredProducts, totalProducts, filters.shops.length, handleClearFilters]
+    [totalFilteredProducts, totalProducts, filters.shops.length, handleClearFilters, loading, usedMockData, successfulScrapes, totalScrapes]
   );
 
   return (
@@ -336,6 +360,22 @@ const styles = StyleSheet.create({
   productCard: {
     flex: 1 / numColumns,
     maxWidth: `${100 / numColumns}%`,
+  },
+  dataSourceBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.gray100,
+    borderRadius: borderRadius.sm,
+    marginHorizontal: spacing.sm,
+    marginTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  dataSourceText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
   },
   resultsHeader: {
     flexDirection: 'row',
