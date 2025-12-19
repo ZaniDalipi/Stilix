@@ -3,13 +3,11 @@ export { officeShoesScraper } from './officeShoesScraper';
 export {
   createGenericScraper,
   buzzSneakersScraper,
-  kotonScraper,
   reservedScraper,
   houseScraper,
   croppScraper,
   sinsayScraper,
-  defactoScraper,
-  massScraper,
+  officeShoesScraper as genericOfficeShoesScraper,
 } from './genericScraper';
 
 import { ShopScraper } from '../scraperBase';
@@ -17,27 +15,21 @@ import { lcWaikikiScraper } from './lcWaikikiScraper';
 import { officeShoesScraper } from './officeShoesScraper';
 import {
   buzzSneakersScraper,
-  kotonScraper,
   reservedScraper,
   houseScraper,
   croppScraper,
   sinsayScraper,
-  defactoScraper,
-  massScraper,
 } from './genericScraper';
 
-// All available scrapers for fashion shops
+// All available scrapers for Macedonian fashion shops
 export const allScrapers: ShopScraper[] = [
   lcWaikikiScraper,
-  officeShoesScraper,
-  buzzSneakersScraper,
-  kotonScraper,
   reservedScraper,
   houseScraper,
   croppScraper,
   sinsayScraper,
-  defactoScraper,
-  massScraper,
+  officeShoesScraper,
+  buzzSneakersScraper,
 ];
 
 // Get scraper by shop ID

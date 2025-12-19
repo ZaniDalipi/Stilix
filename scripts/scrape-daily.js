@@ -21,14 +21,14 @@ const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'data', 'scrapedProducts.j
 const SCRAPE_TIMEOUT = 30000; // 30 seconds per shop
 const MAX_PRODUCTS_PER_SHOP = 50;
 
-// Shop configurations
+// Shop configurations with correct Macedonian URLs
 const SHOPS = [
   {
     id: 'lc_waikiki',
     name: 'LC Waikiki MK',
     urls: [
-      'https://www.lcwaikiki.mk/mk-MK/MK/outlet',
-      'https://www.lcwaikiki.mk/mk-MK/MK/sale',
+      'https://www.lcwaikiki.mk/mk-MK/MK/katalog/outlet',
+      'https://www.lcwaikiki.mk/mk-MK/MK/katalog/popusti',
     ],
     category: 'fashion',
   },
@@ -36,7 +36,9 @@ const SHOPS = [
     id: 'reserved_mk',
     name: 'Reserved MK',
     urls: [
-      'https://www.reserved.com/mk/en/sale-all',
+      'https://www.reserved.com/mk/mk/spetsijalna-ponuda/',
+      'https://www.reserved.com/mk/mk/spetsijalna-ponuda/zheni/',
+      'https://www.reserved.com/mk/mk/spetsijalna-ponuda/mazhi/',
     ],
     category: 'fashion',
   },
@@ -44,7 +46,9 @@ const SHOPS = [
     id: 'house_mk',
     name: 'House MK',
     urls: [
-      'https://www.housebrand.com/mk/mk/sale-all',
+      'https://www.housebrand.com/mk/mk/spetsijalna-ponuda/',
+      'https://www.housebrand.com/mk/mk/spetsijalna-ponuda-zheni/',
+      'https://www.housebrand.com/mk/mk/spetsijalna-ponuda-mazhi/',
     ],
     category: 'fashion',
   },
@@ -52,7 +56,9 @@ const SHOPS = [
     id: 'cropp_mk',
     name: 'Cropp MK',
     urls: [
-      'https://www.cropp.com/mk/mk/sale-all',
+      'https://www.cropp.com/mk/mk/spetsijalna-ponuda/',
+      'https://www.cropp.com/mk/mk/spetsijalna-ponuda-zheni/',
+      'https://www.cropp.com/mk/mk/spetsijalna-ponuda-mazhi/',
     ],
     category: 'fashion',
   },
@@ -60,24 +66,9 @@ const SHOPS = [
     id: 'sinsay_mk',
     name: 'Sinsay MK',
     urls: [
-      'https://www.sinsay.com/mk/mk/sale-all',
-    ],
-    category: 'fashion',
-  },
-  {
-    id: 'koton_mk',
-    name: 'Koton MK',
-    urls: [
-      'https://www.koton.com/mk-mk/kadin/indirimler',
-      'https://www.koton.com/mk-mk/erkek/indirimler',
-    ],
-    category: 'fashion',
-  },
-  {
-    id: 'defacto_mk',
-    name: 'DeFacto MK',
-    urls: [
-      'https://www.defacto.com.mk/indirim',
+      'https://www.sinsay.com/mk/mk/spetsijalna-ponuda/',
+      'https://www.sinsay.com/mk/mk/spetsijalna-ponuda-zheni/',
+      'https://www.sinsay.com/mk/mk/spetsijalna-ponuda-mazhi/',
     ],
     category: 'fashion',
   },
@@ -85,8 +76,9 @@ const SHOPS = [
     id: 'office_shoes',
     name: 'Office Shoes MK',
     urls: [
-      'https://officeshoesmk.com/mk/sale',
-      'https://officeshoesmk.com/mk/outlet',
+      'https://www.officeshoes.mk/popust/',
+      'https://www.officeshoes.mk/akcija/',
+      'https://www.officeshoes.mk/outlet/',
     ],
     category: 'shoes',
   },
@@ -94,17 +86,11 @@ const SHOPS = [
     id: 'buzz_sneakers',
     name: 'Buzz Sneakers MK',
     urls: [
-      'https://www.buzzsneakers.mk/mk/sale',
+      'https://www.buzzsneakers.mk/mk/akcija/',
+      'https://www.buzzsneakers.mk/mk/popust/',
+      'https://www.buzzsneakers.com/MAK_mk/proizvodi/',
     ],
     category: 'shoes',
-  },
-  {
-    id: 'mass_mk',
-    name: 'Mass MK',
-    urls: [
-      'https://mass.mk/sale',
-    ],
-    category: 'fashion',
   },
 ];
 

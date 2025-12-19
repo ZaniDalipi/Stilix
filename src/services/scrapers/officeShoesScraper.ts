@@ -10,8 +10,12 @@ import {
 
 const SHOP_ID = 'office_shoes';
 const SHOP_NAME = 'Office Shoes MK';
-const BASE_URL = 'https://officeshoesmk.com';
-const SALE_URL = 'https://officeshoesmk.com/mk/sale';
+const BASE_URL = 'https://www.officeshoes.mk';
+const SALE_URLS = [
+  'https://www.officeshoes.mk/popust/',
+  'https://www.officeshoes.mk/akcija/',
+  'https://www.officeshoes.mk/outlet/',
+];
 
 /**
  * Office Shoes MK Scraper
@@ -31,9 +35,11 @@ export const officeShoesScraper: ShopScraper = {
 
   async scrape(): Promise<Product[]> {
     const products: Product[] = [];
+    const seenIds = new Set<string>();
 
-    try {
-      const html = await fetchWithProxy(SALE_URL);
+    for (const saleUrl of SALE_URLS) {
+      try {
+        const html = await fetchWithProxy(saleUrl);
 
       // Office Shoes typically uses standard e-commerce product listing
       // Look for product items in the listing
@@ -100,73 +106,82 @@ export const officeShoesScraper: ShopScraper = {
           // Extract product URL
           const linkMatch = productHtml.match(/href="([^"]*\/[^"]*(?:product|item|p\/)[^"]*)"/i) ||
                            productHtml.match(/href="(https?:\/\/[^"]+)"/i);
-          const productUrl = linkMatch ? normalizeImageUrl(linkMatch[1], BASE_URL) : SALE_URL;
+          const productUrl = linkMatch ? normalizeImageUrl(linkMatch[1], BASE_URL) : saleUrl;
 
           // Extract brand if available
           const brandMatch = productHtml.match(/class="[^"]*brand[^"]*"[^>]*>([^<]+)/i);
           const brand = brandMatch ? brandMatch[1].trim() : undefined;
 
           if (name && imageUrl && originalPrice > 0 && salePrice > 0 && originalPrice > salePrice) {
-            products.push({
-              id: generateProductId(SHOP_ID, name + salePrice),
-              shopId: SHOP_ID,
-              shopName: SHOP_NAME,
-              name,
-              imageUrl,
-              originalPrice,
-              salePrice,
-              discountPercentage: calculateDiscount(originalPrice, salePrice),
-              currency: 'MKD',
-              productUrl,
-              affiliateUrl: `${productUrl}${productUrl.includes('?') ? '&' : '?'}ref=stilix`,
-              category: 'shoes',
-              brand,
-              inStock: true,
-              fetchedAt: new Date(),
-            });
+            const productId = generateProductId(SHOP_ID, name + salePrice);
+            if (!seenIds.has(productId)) {
+              seenIds.add(productId);
+              products.push({
+                id: productId,
+                shopId: SHOP_ID,
+                shopName: SHOP_NAME,
+                name,
+                imageUrl,
+                originalPrice,
+                salePrice,
+                discountPercentage: calculateDiscount(originalPrice, salePrice),
+                currency: 'MKD',
+                productUrl,
+                affiliateUrl: `${productUrl}${productUrl.includes('?') ? '&' : '?'}ref=stilix`,
+                category: 'shoes',
+                brand,
+                inStock: true,
+                fetchedAt: new Date(),
+              });
+            }
           }
         } catch (e) {
           console.warn('Failed to parse Office Shoes product:', e);
         }
       }
 
-      // Also try to find JSON data embedded in the page
-      const jsonMatch = html.match(/var\s+products\s*=\s*(\[[\s\S]*?\]);/i) ||
-                       html.match(/window\.__INITIAL_STATE__\s*=\s*({[\s\S]*?});/i);
+        // Also try to find JSON data embedded in the page
+        const jsonMatch = html.match(/var\s+products\s*=\s*(\[[\s\S]*?\]);/i) ||
+                         html.match(/window\.__INITIAL_STATE__\s*=\s*({[\s\S]*?});/i);
 
-      if (jsonMatch && products.length === 0) {
-        try {
-          const data = JSON.parse(jsonMatch[1]);
-          const items = Array.isArray(data) ? data : data.products || [];
+        if (jsonMatch && products.length === 0) {
+          try {
+            const data = JSON.parse(jsonMatch[1]);
+            const items = Array.isArray(data) ? data : data.products || [];
 
-          for (const item of items) {
-            if (item.price && item.special_price && item.name) {
-              products.push({
-                id: generateProductId(SHOP_ID, item.id || item.sku || item.name),
-                shopId: SHOP_ID,
-                shopName: SHOP_NAME,
-                name: item.name,
-                description: item.description,
-                imageUrl: normalizeImageUrl(item.image || item.thumbnail, BASE_URL),
-                originalPrice: parseFloat(item.price),
-                salePrice: parseFloat(item.special_price),
-                discountPercentage: calculateDiscount(parseFloat(item.price), parseFloat(item.special_price)),
-                currency: 'MKD',
-                productUrl: item.url || SALE_URL,
-                affiliateUrl: item.url ? `${item.url}?ref=stilix` : undefined,
-                category: 'shoes',
-                brand: item.brand,
-                inStock: item.in_stock !== false,
-                fetchedAt: new Date(),
-              });
+            for (const item of items) {
+              if (item.price && item.special_price && item.name) {
+                const productId = generateProductId(SHOP_ID, item.id || item.sku || item.name);
+                if (!seenIds.has(productId)) {
+                  seenIds.add(productId);
+                  products.push({
+                    id: productId,
+                    shopId: SHOP_ID,
+                    shopName: SHOP_NAME,
+                    name: item.name,
+                    description: item.description,
+                    imageUrl: normalizeImageUrl(item.image || item.thumbnail, BASE_URL),
+                    originalPrice: parseFloat(item.price),
+                    salePrice: parseFloat(item.special_price),
+                    discountPercentage: calculateDiscount(parseFloat(item.price), parseFloat(item.special_price)),
+                    currency: 'MKD',
+                    productUrl: item.url || saleUrl,
+                    affiliateUrl: item.url ? `${item.url}?ref=stilix` : undefined,
+                    category: 'shoes',
+                    brand: item.brand,
+                    inStock: item.in_stock !== false,
+                    fetchedAt: new Date(),
+                  });
+                }
+              }
             }
+          } catch (e) {
+            console.warn('Failed to parse embedded JSON:', e);
           }
-        } catch (e) {
-          console.warn('Failed to parse embedded JSON:', e);
         }
+      } catch (error) {
+        console.error(`Office Shoes scraper error for ${saleUrl}:`, error);
       }
-    } catch (error) {
-      console.error('Office Shoes scraper error:', error);
     }
 
     return products;

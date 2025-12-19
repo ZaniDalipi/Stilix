@@ -344,36 +344,28 @@ function extractHtmlProducts(
   return products;
 }
 
-// Pre-configured scrapers for fashion shops
+// Pre-configured scrapers for Macedonian fashion shops with correct URLs
 export const buzzSneakersScraper = createGenericScraper({
   shopId: 'buzz_sneakers',
   shopName: 'Buzz Sneakers MK',
   baseUrl: 'https://www.buzzsneakers.mk',
   saleUrls: [
-    'https://www.buzzsneakers.mk/mk/sale',
-    'https://www.buzzsneakers.mk/mk/outlet',
+    'https://www.buzzsneakers.mk/mk/akcija/',
+    'https://www.buzzsneakers.mk/mk/popust/',
+    'https://www.buzzsneakers.com/MAK_mk/proizvodi/',
   ],
+  affiliateParam: 'utm_source=stilix',
   defaultCategory: 'shoes',
-});
-
-export const kotonScraper = createGenericScraper({
-  shopId: 'koton_mk',
-  shopName: 'Koton MK',
-  baseUrl: 'https://www.koton.com',
-  saleUrls: [
-    'https://www.koton.com/mk/indirim',
-    'https://www.koton.com/mk/sale',
-  ],
-  defaultCategory: 'fashion',
 });
 
 export const reservedScraper = createGenericScraper({
   shopId: 'reserved_mk',
   shopName: 'Reserved MK',
-  baseUrl: 'https://www.reserved.com',
+  baseUrl: 'https://www.reserved.com/mk/mk/',
   saleUrls: [
-    'https://www.reserved.com/mk/en/sale-all',
-    'https://www.reserved.com/mk/mk/sale-all',
+    'https://www.reserved.com/mk/mk/spetsijalna-ponuda/',
+    'https://www.reserved.com/mk/mk/spetsijalna-ponuda/zheni/',
+    'https://www.reserved.com/mk/mk/spetsijalna-ponuda/mazhi/',
   ],
   affiliateParam: 'utm_source=stilix',
   defaultCategory: 'fashion',
@@ -382,10 +374,11 @@ export const reservedScraper = createGenericScraper({
 export const houseScraper = createGenericScraper({
   shopId: 'house_mk',
   shopName: 'House MK',
-  baseUrl: 'https://www.housebrand.com',
+  baseUrl: 'https://www.housebrand.com/mk/mk/',
   saleUrls: [
-    'https://www.housebrand.com/mk/mk/sale-all',
-    'https://www.housebrand.com/mk/en/sale-all',
+    'https://www.housebrand.com/mk/mk/spetsijalna-ponuda/',
+    'https://www.housebrand.com/mk/mk/spetsijalna-ponuda-zheni/',
+    'https://www.housebrand.com/mk/mk/spetsijalna-ponuda-mazhi/',
   ],
   affiliateParam: 'utm_source=stilix',
   defaultCategory: 'fashion',
@@ -394,10 +387,11 @@ export const houseScraper = createGenericScraper({
 export const croppScraper = createGenericScraper({
   shopId: 'cropp_mk',
   shopName: 'Cropp MK',
-  baseUrl: 'https://www.cropp.com',
+  baseUrl: 'https://www.cropp.com/mk/mk/',
   saleUrls: [
-    'https://www.cropp.com/mk/mk/sale-all',
-    'https://www.cropp.com/mk/en/sale-all',
+    'https://www.cropp.com/mk/mk/spetsijalna-ponuda/',
+    'https://www.cropp.com/mk/mk/spetsijalna-ponuda-zheni/',
+    'https://www.cropp.com/mk/mk/spetsijalna-ponuda-mazhi/',
   ],
   affiliateParam: 'utm_source=stilix',
   defaultCategory: 'fashion',
@@ -406,35 +400,25 @@ export const croppScraper = createGenericScraper({
 export const sinsayScraper = createGenericScraper({
   shopId: 'sinsay_mk',
   shopName: 'Sinsay MK',
-  baseUrl: 'https://www.sinsay.com',
+  baseUrl: 'https://www.sinsay.com/mk/mk/',
   saleUrls: [
-    'https://www.sinsay.com/mk/mk/sale-all',
-    'https://www.sinsay.com/mk/en/sale-all',
+    'https://www.sinsay.com/mk/mk/spetsijalna-ponuda/',
+    'https://www.sinsay.com/mk/mk/spetsijalna-ponuda-zheni/',
+    'https://www.sinsay.com/mk/mk/spetsijalna-ponuda-mazhi/',
   ],
   affiliateParam: 'utm_source=stilix',
   defaultCategory: 'fashion',
 });
 
-export const defactoScraper = createGenericScraper({
-  shopId: 'defacto_mk',
-  shopName: 'DeFacto MK',
-  baseUrl: 'https://www.defacto.com.mk',
+export const officeShoesScraper = createGenericScraper({
+  shopId: 'office_shoes',
+  shopName: 'Office Shoes MK',
+  baseUrl: 'https://www.officeshoes.mk',
   saleUrls: [
-    'https://www.defacto.com.mk/indirim',
-    'https://www.defacto.com.mk/sale',
-  ],
-  affiliateParam: 'utm_source=stilix',
-  defaultCategory: 'fashion',
-});
-
-export const massScraper = createGenericScraper({
-  shopId: 'mass_mk',
-  shopName: 'Mass MK',
-  baseUrl: 'https://mass.mk',
-  saleUrls: [
-    'https://mass.mk/sale',
-    'https://mass.mk/outlet',
+    'https://www.officeshoes.mk/popust/',
+    'https://www.officeshoes.mk/akcija/',
+    'https://www.officeshoes.mk/outlet/',
   ],
   affiliateParam: 'ref=stilix',
-  defaultCategory: 'fashion',
+  defaultCategory: 'shoes',
 });

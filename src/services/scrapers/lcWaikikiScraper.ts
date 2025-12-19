@@ -11,7 +11,10 @@ import {
 const SHOP_ID = 'lc_waikiki';
 const SHOP_NAME = 'LC Waikiki MK';
 const BASE_URL = 'https://www.lcwaikiki.mk';
-const SALE_URL = 'https://www.lcwaikiki.mk/mk-MK/MK/outlet';
+const SALE_URLS = [
+  'https://www.lcwaikiki.mk/mk-MK/MK/katalog/outlet',
+  'https://www.lcwaikiki.mk/mk-MK/MK/katalog/popusti',
+];
 
 /**
  * LC Waikiki MK Scraper
@@ -31,9 +34,11 @@ export const lcWaikikiScraper: ShopScraper = {
 
   async scrape(): Promise<Product[]> {
     const products: Product[] = [];
+    const seenIds = new Set<string>();
 
-    try {
-      const html = await fetchWithProxy(SALE_URL);
+    for (const saleUrl of SALE_URLS) {
+      try {
+        const html = await fetchWithProxy(saleUrl);
 
       // LC Waikiki uses JSON-LD for product data
       const jsonLdMatches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
@@ -58,24 +63,28 @@ export const lcWaikikiScraper: ShopScraper = {
                   const salePrice = parseFloat(offer.lowPrice || offer.price) || 0;
 
                   if (salePrice > 0 && originalPrice > salePrice) {
-                    products.push({
-                      id: generateProductId(SHOP_ID, item.sku || item.name),
-                      shopId: SHOP_ID,
-                      shopName: SHOP_NAME,
-                      name: item.name,
-                      description: item.description,
-                      imageUrl: Array.isArray(item.image) ? item.image[0] : item.image,
-                      originalPrice,
-                      salePrice,
-                      discountPercentage: calculateDiscount(originalPrice, salePrice),
-                      currency: 'MKD',
-                      productUrl: item.url || SALE_URL,
-                      affiliateUrl: item.url ? `${item.url}?utm_source=stilix` : undefined,
-                      category: item.category || 'fashion',
-                      brand: 'LC Waikiki',
-                      inStock: offer.availability?.includes('InStock') ?? true,
-                      fetchedAt: new Date(),
-                    });
+                    const productId = generateProductId(SHOP_ID, item.sku || item.name);
+                    if (!seenIds.has(productId)) {
+                      seenIds.add(productId);
+                      products.push({
+                        id: productId,
+                        shopId: SHOP_ID,
+                        shopName: SHOP_NAME,
+                        name: item.name,
+                        description: item.description,
+                        imageUrl: Array.isArray(item.image) ? item.image[0] : item.image,
+                        originalPrice,
+                        salePrice,
+                        discountPercentage: calculateDiscount(originalPrice, salePrice),
+                        currency: 'MKD',
+                        productUrl: item.url || saleUrl,
+                        affiliateUrl: item.url ? `${item.url}?utm_source=stilix` : undefined,
+                        category: item.category || 'fashion',
+                        brand: 'LC Waikiki',
+                        inStock: offer.availability?.includes('InStock') ?? true,
+                        fetchedAt: new Date(),
+                      });
+                    }
                   }
                 }
               }
@@ -86,58 +95,63 @@ export const lcWaikikiScraper: ShopScraper = {
         }
       }
 
-      // Fallback: Parse HTML product cards
-      if (products.length === 0) {
-        // Look for product cards in HTML
-        const productMatches = html.match(/<div[^>]*class="[^"]*product-card[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/gi) || [];
+        // Fallback: Parse HTML product cards
+        if (products.length === 0) {
+          // Look for product cards in HTML
+          const productMatches = html.match(/<div[^>]*class="[^"]*product-card[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/gi) || [];
 
-        for (const productHtml of productMatches.slice(0, 50)) {
-          try {
-            // Extract image
-            const imgMatch = productHtml.match(/src="([^"]+\.(jpg|jpeg|png|webp)[^"]*)"/i);
-            const imageUrl = imgMatch ? normalizeImageUrl(imgMatch[1], BASE_URL) : '';
+          for (const productHtml of productMatches.slice(0, 50)) {
+            try {
+              // Extract image
+              const imgMatch = productHtml.match(/src="([^"]+\.(jpg|jpeg|png|webp)[^"]*)"/i);
+              const imageUrl = imgMatch ? normalizeImageUrl(imgMatch[1], BASE_URL) : '';
 
-            // Extract name
-            const nameMatch = productHtml.match(/class="[^"]*product-name[^"]*"[^>]*>([^<]+)/i) ||
-                             productHtml.match(/title="([^"]+)"/i);
-            const name = nameMatch ? nameMatch[1].trim() : '';
+              // Extract name
+              const nameMatch = productHtml.match(/class="[^"]*product-name[^"]*"[^>]*>([^<]+)/i) ||
+                               productHtml.match(/title="([^"]+)"/i);
+              const name = nameMatch ? nameMatch[1].trim() : '';
 
-            // Extract prices
-            const priceMatches = productHtml.match(/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*(?:MKD|ден)/gi) || [];
-            const prices = priceMatches.map(p => extractPrice(p)).filter(p => p > 0).sort((a, b) => b - a);
+              // Extract prices
+              const priceMatches = productHtml.match(/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*(?:MKD|ден)/gi) || [];
+              const prices = priceMatches.map(p => extractPrice(p)).filter(p => p > 0).sort((a, b) => b - a);
 
-            // Extract product URL
-            const linkMatch = productHtml.match(/href="([^"]*\/product[^"]*)"/i);
-            const productUrl = linkMatch ? normalizeImageUrl(linkMatch[1], BASE_URL) : SALE_URL;
+              // Extract product URL
+              const linkMatch = productHtml.match(/href="([^"]*\/product[^"]*)"/i);
+              const productUrl = linkMatch ? normalizeImageUrl(linkMatch[1], BASE_URL) : saleUrl;
 
-            if (name && imageUrl && prices.length >= 2) {
-              const originalPrice = prices[0];
-              const salePrice = prices[prices.length - 1];
+              if (name && imageUrl && prices.length >= 2) {
+                const originalPrice = prices[0];
+                const currentSalePrice = prices[prices.length - 1];
+                const productId = generateProductId(SHOP_ID, name);
 
-              products.push({
-                id: generateProductId(SHOP_ID, name),
-                shopId: SHOP_ID,
-                shopName: SHOP_NAME,
-                name,
-                imageUrl,
-                originalPrice,
-                salePrice,
-                discountPercentage: calculateDiscount(originalPrice, salePrice),
-                currency: 'MKD',
-                productUrl,
-                affiliateUrl: `${productUrl}?utm_source=stilix`,
-                brand: 'LC Waikiki',
-                inStock: true,
-                fetchedAt: new Date(),
-              });
+                if (!seenIds.has(productId)) {
+                  seenIds.add(productId);
+                  products.push({
+                    id: productId,
+                    shopId: SHOP_ID,
+                    shopName: SHOP_NAME,
+                    name,
+                    imageUrl,
+                    originalPrice,
+                    salePrice: currentSalePrice,
+                    discountPercentage: calculateDiscount(originalPrice, currentSalePrice),
+                    currency: 'MKD',
+                    productUrl,
+                    affiliateUrl: `${productUrl}?utm_source=stilix`,
+                    brand: 'LC Waikiki',
+                    inStock: true,
+                    fetchedAt: new Date(),
+                  });
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to parse product card:', e);
             }
-          } catch (e) {
-            console.warn('Failed to parse product card:', e);
           }
         }
+      } catch (error) {
+        console.error(`LC Waikiki scraper error for ${saleUrl}:`, error);
       }
-    } catch (error) {
-      console.error('LC Waikiki scraper error:', error);
     }
 
     return products;
