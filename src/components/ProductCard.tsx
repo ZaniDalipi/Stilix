@@ -8,6 +8,7 @@ import {
   Platform,
   Linking,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
@@ -31,17 +32,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
   const handlePress = async () => {
     if (onPress) {
       onPress(product);
-    } else {
-      // Open affiliate URL if available, otherwise product URL
-      const url = product.affiliateUrl || product.productUrl;
-      try {
-        const canOpen = await Linking.canOpenURL(url);
-        if (canOpen) {
-          await Linking.openURL(url);
-        }
-      } catch (error) {
-        console.error('Error opening URL:', error);
+      return;
+    }
+
+    // Get the URL to open
+    const url = product.affiliateUrl || product.productUrl;
+
+    if (!url || url.length < 10) {
+      Alert.alert('No Link', 'This product does not have a valid link.');
+      return;
+    }
+
+    try {
+      // On web, just open the URL directly
+      if (Platform.OS === 'web') {
+        window.open(url, '_blank');
+        return;
       }
+
+      // On mobile, use Linking
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error('Error opening URL:', error);
+      Alert.alert('Error', `Could not open: ${url}`);
     }
   };
 
@@ -161,6 +174,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
           <Text style={styles.viewButtonText}>View Product</Text>
           <Ionicons name="open-outline" size={14} color={colors.white} />
         </TouchableOpacity>
+
+        {/* Show link domain */}
+        {(product.productUrl || product.affiliateUrl) && (
+          <View style={styles.linkContainer}>
+            <Ionicons name="link" size={12} color={colors.textMuted} />
+            <Text style={styles.linkText} numberOfLines={1}>
+              {(() => {
+                try {
+                  const url = product.affiliateUrl || product.productUrl;
+                  return new URL(url).hostname.replace('www.', '');
+                } catch {
+                  return 'Open link';
+                }
+              })()}
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -312,6 +342,17 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
+  },
+  linkContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  linkText: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
 });
 
