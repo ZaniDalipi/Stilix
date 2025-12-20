@@ -27,12 +27,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
   const [imageError, setImageError] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const likeAnim = useRef(new Animated.Value(1)).current;
 
   // Format price in Macedonian format: 1.299 ден
-  const formatPrice = (price: number, currency: string): string => {
-    const formatted = price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${formatted} ${currency === 'MKD' ? 'ден' : currency}`;
+  const formatPrice = (price: number): string => {
+    return price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
   const getProductUrl = () => {
@@ -60,7 +58,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.97,
+      toValue: 0.98,
       useNativeDriver: true,
     }).start();
   };
@@ -85,7 +83,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
   const handleCopyLink = async () => {
     const url = getProductUrl();
     if (!url || url.length < 10) {
-      Alert.alert('No Link', 'This product does not have a valid link to copy.');
+      Alert.alert('No Link', 'No link available to copy.');
       return;
     }
 
@@ -95,32 +93,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
       } else {
         await Clipboard.setStringAsync(url);
       }
-      Alert.alert('✓ Copied!', 'Link copied to clipboard');
+      Alert.alert('Copied!', 'Link copied to clipboard');
     } catch (error) {
-      console.error('Error copying URL:', error);
       Alert.alert('Error', 'Could not copy link');
     }
   };
 
   const handleLikePress = () => {
-    Animated.sequence([
-      Animated.timing(likeAnim, {
-        toValue: 1.3,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.spring(likeAnim, {
-        toValue: 1,
-        friction: 3,
-        useNativeDriver: true,
-      }),
-    ]).start();
     setIsLiked(!isLiked);
   };
 
   const savings = product.originalPrice - product.salePrice;
   const productUrl = getProductUrl();
-  const isHotDeal = product.discountPercentage >= 50;
+  const isHotDeal = product.discountPercentage >= 40;
 
   const CardWrapper = ({ children }: { children: React.ReactNode }) => {
     if (Platform.OS === 'web' && productUrl) {
@@ -131,7 +116,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
           rel="noopener noreferrer"
           style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
           onClick={(e) => {
-            if ((e.target as HTMLElement).closest('button, [role="button"]')) {
+            if ((e.target as HTMLElement).closest('[data-clickable]')) {
               e.preventDefault();
             }
           }}
@@ -145,7 +130,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
 
   return (
     <CardWrapper>
-      <Animated.View style={[{ transform: [{ scale: scaleAnim }] }]}>
+      <Animated.View style={[styles.cardWrapper, { transform: [{ scale: scaleAnim }] }]}>
         <TouchableOpacity
           style={[styles.container, style]}
           onPress={handlePress}
@@ -153,17 +138,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
           onPressOut={handlePressOut}
           activeOpacity={1}
         >
-          {/* Image Container */}
-          <View style={styles.imageContainer}>
+          {/* Image Section */}
+          <View style={styles.imageSection}>
             {imageLoading && (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={colors.primary} />
+                <ActivityIndicator size="large" color={colors.primary} />
               </View>
             )}
             {imageError ? (
               <View style={styles.errorContainer}>
-                <Ionicons name="image-outline" size={40} color={colors.gray400} />
-                <Text style={styles.errorText}>No Image</Text>
+                <Ionicons name="image-outline" size={48} color={colors.gray300} />
+                <Text style={styles.errorText}>Image not available</Text>
               </View>
             ) : (
               <Image
@@ -179,82 +164,84 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
               />
             )}
 
-            {/* Overlay for better text visibility */}
-            <View style={styles.imageGradient} />
+            {/* Top Row - Discount & Like */}
+            <View style={styles.imageOverlay}>
+              <View style={[styles.discountBadge, isHotDeal && styles.hotDealBadge]}>
+                {isHotDeal && <Ionicons name="flame" size={14} color="#FFF" style={styles.flameIcon} />}
+                <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
+              </View>
 
-            {/* Discount Badge */}
-            <View style={[styles.discountBadge, isHotDeal && styles.hotDealBadge]}>
-              {isHotDeal && <Ionicons name="flame" size={12} color={colors.white} />}
-              <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
-            </View>
-
-            {/* Like Button */}
-            <TouchableOpacity
-              style={styles.likeButton}
-              onPress={handleLikePress}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
+              <TouchableOpacity
+                style={styles.likeButton}
+                onPress={handleLikePress}
+                data-clickable="true"
+              >
                 <Ionicons
                   name={isLiked ? 'heart' : 'heart-outline'}
-                  size={22}
-                  color={isLiked ? colors.primary : colors.gray500}
+                  size={20}
+                  color={isLiked ? colors.primary : '#666'}
                 />
-              </Animated.View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
 
-            {/* Shop badge */}
+            {/* Shop Badge */}
             <View style={styles.shopBadge}>
               <Text style={styles.shopBadgeText}>{product.shopName}</Text>
             </View>
           </View>
 
-          {/* Content Container */}
-          <View style={styles.content}>
+          {/* Details Section */}
+          <View style={styles.detailsSection}>
             {/* Product Name */}
             <Text style={styles.productName} numberOfLines={2}>
               {product.name}
             </Text>
 
-            {/* Brand */}
+            {/* Brand if available */}
             {product.brand && (
-              <Text style={styles.brand} numberOfLines={1}>
-                {product.brand}
-              </Text>
+              <Text style={styles.brandText}>{product.brand}</Text>
             )}
 
-            {/* Price Container */}
-            <View style={styles.priceContainer}>
-              <Text style={styles.salePrice}>
-                {formatPrice(product.salePrice, product.currency)}
-              </Text>
-              <Text style={styles.originalPrice}>
-                {formatPrice(product.originalPrice, product.currency)}
-              </Text>
+            {/* Price Row */}
+            <View style={styles.priceRow}>
+              <View style={styles.priceContainer}>
+                <Text style={styles.salePrice}>{formatPrice(product.salePrice)}</Text>
+                <Text style={styles.currency}>ден</Text>
+              </View>
+              <Text style={styles.originalPrice}>{formatPrice(product.originalPrice)} ден</Text>
             </View>
 
-            {/* Savings pill */}
-            <View style={styles.savingsPill}>
-              <Ionicons name="pricetag" size={12} color={colors.success} />
-              <Text style={styles.savingsText}>
-                Save {formatPrice(savings, product.currency)}
-              </Text>
+            {/* Savings Badge */}
+            <View style={styles.savingsBadge}>
+              <Ionicons name="arrow-down-circle" size={14} color={colors.success} />
+              <Text style={styles.savingsText}>Заштеди {formatPrice(savings)} ден</Text>
             </View>
 
             {/* Action Buttons */}
-            <View style={styles.buttonRow}>
+            <View style={styles.actionsRow}>
               <TouchableOpacity
-                style={styles.viewButton}
+                style={styles.shopButton}
                 onPress={handlePress}
+                data-clickable="true"
               >
-                <View style={styles.gradientButton}>
-                  <Ionicons name="bag-handle-outline" size={16} color={colors.white} />
-                  <Text style={styles.viewButtonText}>Shop Now</Text>
-                </View>
+                <Ionicons name="cart-outline" size={18} color="#FFF" />
+                <Text style={styles.shopButtonText}>Купи</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.copyButton} onPress={handleCopyLink}>
-                <Ionicons name="link-outline" size={18} color={colors.gray600} />
+              <TouchableOpacity
+                style={styles.copyButton}
+                onPress={handleCopyLink}
+                data-clickable="true"
+              >
+                <Ionicons name="copy-outline" size={18} color={colors.gray600} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={handleCopyLink}
+                data-clickable="true"
+              >
+                <Ionicons name="share-social-outline" size={18} color={colors.gray600} />
               </TouchableOpacity>
             </View>
           </View>
@@ -265,176 +252,215 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
 };
 
 const styles = StyleSheet.create({
+  cardWrapper: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: colors.cardBackground,
-    borderRadius: borderRadius.xl,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     overflow: 'hidden',
-    margin: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    ...shadows.medium,
-    ...(Platform.OS === 'web' && {
-      cursor: 'pointer',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    margin: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        cursor: 'pointer',
+      },
     }),
   },
-  imageContainer: {
+  imageSection: {
     width: '100%',
-    aspectRatio: 0.85,
-    backgroundColor: colors.gray100,
+    aspectRatio: 0.8,
+    backgroundColor: '#F8F9FA',
     position: 'relative',
-    overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  imageGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-  },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.gray100,
+    backgroundColor: '#F8F9FA',
   },
   errorContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.gray100,
+    backgroundColor: '#F8F9FA',
   },
   errorText: {
-    marginTop: spacing.xs,
-    fontSize: fontSize.xs,
+    marginTop: 8,
+    fontSize: 12,
     color: colors.gray400,
   },
-  discountBadge: {
+  imageOverlay: {
     position: 'absolute',
-    top: spacing.sm,
-    left: spacing.sm,
-    backgroundColor: colors.discount,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
+    top: 10,
+    left: 10,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  discountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    backgroundColor: '#E53935',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
   },
   hotDealBadge: {
-    backgroundColor: colors.hotDeal,
+    backgroundColor: '#FF6D00',
+  },
+  flameIcon: {
+    marginRight: 4,
   },
   discountText: {
-    color: colors.white,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
   },
   likeButton: {
-    position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.round,
-    padding: spacing.sm,
-    ...shadows.small,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      },
+    }),
   },
   shopBadge: {
     position: 'absolute',
-    bottom: spacing.sm,
-    left: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
+    bottom: 10,
+    left: 10,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
   shopBadgeText: {
-    color: colors.white,
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
   },
-  content: {
-    padding: spacing.md,
+  detailsSection: {
+    padding: 14,
   },
   productName: {
-    fontSize: fontSize.md,
-    color: colors.textPrimary,
-    fontWeight: fontWeight.semibold,
-    lineHeight: fontSize.md * 1.4,
-    marginBottom: spacing.xs,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A2E',
+    lineHeight: 20,
+    marginBottom: 4,
   },
-  brand: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
+  brandText: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 10,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 8,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
+    marginRight: 10,
   },
   salePrice: {
-    fontSize: fontSize.xl,
+    fontSize: 22,
+    fontWeight: '800',
     color: colors.primary,
-    fontWeight: fontWeight.bold,
+  },
+  currency: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 3,
   },
   originalPrice: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
+    fontSize: 13,
+    color: '#9CA3AF',
     textDecorationLine: 'line-through',
   },
-  savingsPill: {
+  savingsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.success + '15',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.round,
+    backgroundColor: '#ECFDF5',
     alignSelf: 'flex-start',
-    gap: spacing.xs,
-    marginBottom: spacing.md,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 12,
   },
   savingsText: {
-    fontSize: fontSize.xs,
-    color: colors.success,
-    fontWeight: fontWeight.semibold,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#059669',
+    marginLeft: 5,
   },
-  buttonRow: {
+  actionsRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
     alignItems: 'center',
+    gap: 8,
   },
-  viewButton: {
+  shopButton: {
     flex: 1,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-  },
-  gradientButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
-    gap: spacing.xs,
     backgroundColor: colors.primary,
-    borderRadius: borderRadius.md,
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
   },
-  viewButtonText: {
-    color: colors.white,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
+  shopButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   copyButton: {
     width: 44,
     height: 44,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.gray100,
-    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
