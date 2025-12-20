@@ -219,7 +219,10 @@ function extractPrice(text) {
   if (!text) return 0;
 
   // Remove currency symbols and text
-  let cleaned = text.replace(/ден|MKD|EUR|€|денари/gi, '').trim();
+  let cleaned = text.replace(/ден|MKD|EUR|€|денари|RSD|din/gi, '').trim();
+
+  // Remove any HTML tags
+  cleaned = cleaned.replace(/<[^>]+>/g, '');
 
   // Handle Macedonian format: 1.299,00 or 1.299
   // Period is thousands separator, comma is decimal
@@ -244,6 +247,101 @@ function extractPrice(text) {
 
   const price = parseFloat(cleaned) || 0;
   return price;
+}
+
+// Extract prices specifically from price-related elements
+function extractPricesFromHtml(productHtml) {
+  const prices = {
+    original: 0,
+    sale: 0
+  };
+
+  // Look for data attributes first (most reliable)
+  const dataOriginalMatch = productHtml.match(/data-(?:original-price|old-price|regular-price|price-old)="([^"]+)"/i);
+  const dataSaleMatch = productHtml.match(/data-(?:sale-price|current-price|price-new|price|final-price)="([^"]+)"/i);
+
+  if (dataOriginalMatch) {
+    prices.original = extractPrice(dataOriginalMatch[1]);
+  }
+  if (dataSaleMatch) {
+    prices.sale = extractPrice(dataSaleMatch[1]);
+  }
+
+  // If we found both from data attributes, return
+  if (prices.original > 0 && prices.sale > 0 && prices.original > prices.sale) {
+    return prices;
+  }
+
+  // Look for specific price classes
+  const pricePatterns = [
+    // Original/old price patterns
+    {
+      type: 'original',
+      patterns: [
+        /class="[^"]*(?:old-price|original-price|regular-price|was-price|price-old|line-through|strikethrough)[^"]*"[^>]*>([^<]*[\d.,]+[^<]*)</gi,
+        /<s[^>]*>([^<]*[\d.,]+[^<]*)<\/s>/gi,
+        /<del[^>]*>([^<]*[\d.,]+[^<]*)<\/del>/gi,
+        /<strike[^>]*>([^<]*[\d.,]+[^<]*)<\/strike>/gi,
+      ]
+    },
+    // Sale/current price patterns
+    {
+      type: 'sale',
+      patterns: [
+        /class="[^"]*(?:sale-price|current-price|special-price|price-new|final-price|now-price|price-sale)[^"]*"[^>]*>([^<]*[\d.,]+[^<]*)</gi,
+        /class="[^"]*price[^"]*"[^>]*>[^<]*<span[^>]*>([^<]*[\d.,]+[^<]*)</gi,
+      ]
+    }
+  ];
+
+  for (const priceType of pricePatterns) {
+    for (const pattern of priceType.patterns) {
+      const matches = [...productHtml.matchAll(pattern)];
+      for (const match of matches) {
+        const price = extractPrice(match[1]);
+        if (price >= 50 && price <= 100000) {
+          if (priceType.type === 'original' && prices.original === 0) {
+            prices.original = price;
+          } else if (priceType.type === 'sale' && prices.sale === 0) {
+            prices.sale = price;
+          }
+        }
+      }
+    }
+  }
+
+  // If still no prices, look for generic price container
+  if (prices.original === 0 || prices.sale === 0) {
+    const priceContainerMatch = productHtml.match(/class="[^"]*price[^"]*"[^>]*>([\s\S]*?)<\/(?:div|span|p)>/gi);
+    if (priceContainerMatch) {
+      const allPricesInContainer = [];
+      for (const container of priceContainerMatch) {
+        // Find all numbers that look like prices
+        const priceMatches = container.match(/[\d.,]+\s*(?:ден|MKD|денари)?/g);
+        if (priceMatches) {
+          for (const pm of priceMatches) {
+            const price = extractPrice(pm);
+            if (price >= 50 && price <= 100000 && !allPricesInContainer.includes(price)) {
+              allPricesInContainer.push(price);
+            }
+          }
+        }
+      }
+
+      // Sort descending - higher price is original
+      allPricesInContainer.sort((a, b) => b - a);
+
+      if (allPricesInContainer.length >= 2) {
+        if (prices.original === 0) prices.original = allPricesInContainer[0];
+        if (prices.sale === 0) prices.sale = allPricesInContainer[allPricesInContainer.length - 1];
+      } else if (allPricesInContainer.length === 1) {
+        // Only one price found - might not be on sale
+        if (prices.sale === 0) prices.sale = allPricesInContainer[0];
+      }
+    }
+  }
+
+  return prices;
 }
 
 // Calculate discount percentage
@@ -493,35 +591,22 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
         }
       }
 
-      // Extract prices - look for price patterns in MKD format
-      const pricePatterns = [
-        // Price with currency: "1.299 ден", "1.299,00 MKD"
-        /(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)\s*(?:ден|MKD|денари)/gi,
-        // Price in spans/divs with price class
-        /class="[^"]*price[^"]*"[^>]*>([^<]*\d[^<]*)</gi,
-        // Data attribute prices
-        /data-price="([^"]+)"/gi,
-        // General number patterns (4+ digits likely to be MKD price)
-        /(\d{1,3}\.\d{3}(?:,\d{2})?)/g,
-        /(\d{4,})/g,
-      ];
+      // Extract prices using improved function
+      const extractedPrices = extractPricesFromHtml(productHtml);
+      let originalPrice = extractedPrices.original;
+      let salePrice = extractedPrices.sale;
 
-      const foundPrices = [];
-      for (const pattern of pricePatterns) {
-        let match;
-        while ((match = pattern.exec(productHtml)) !== null) {
-          const price = extractPrice(match[1]);
-          if (price >= 100 && price <= 50000 && !foundPrices.includes(price)) {
-            foundPrices.push(price);
-          }
-        }
+      // Validate prices
+      if (salePrice > originalPrice && originalPrice > 0) {
+        // Swap if sale price is higher (extraction error)
+        [originalPrice, salePrice] = [salePrice, originalPrice];
       }
 
-      // Sort descending - original price should be higher
-      foundPrices.sort((a, b) => b - a);
-
-      const originalPrice = foundPrices[0] || 0;
-      const salePrice = foundPrices.length > 1 ? foundPrices[foundPrices.length - 1] : 0;
+      // If only sale price found, skip (can't calculate discount)
+      if (originalPrice === 0 && salePrice > 0) {
+        originalPrice = salePrice;
+        salePrice = 0;
+      }
 
       // Extract URL - comprehensive patterns for product links
       const linkPatterns = [
