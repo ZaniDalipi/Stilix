@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 36) / 2;
+const CARD_WIDTH = (width - 32) / 2;
 
 interface ProductCardProps {
   product: Product;
@@ -63,7 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
       <View style={styles.imageContainer}>
         {imageError ? (
           <View style={styles.imagePlaceholder}>
-            <Ionicons name="image-outline" size={28} color="#ccc" />
+            <Ionicons name="image-outline" size={24} color="#ccc" />
           </View>
         ) : (
           <Image
@@ -76,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
 
         {/* Discount Badge */}
         <View style={[styles.discountBadge, isHotDeal && styles.hotDealBadge]}>
-          {isHotDeal && <Ionicons name="flame" size={10} color="#fff" />}
+          {isHotDeal && <Ionicons name="flame" size={8} color="#fff" />}
           <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
         </View>
 
@@ -87,7 +87,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
         >
           <Ionicons
             name={isLiked ? 'heart' : 'heart-outline'}
-            size={16}
+            size={14}
             color={isLiked ? '#FF385C' : '#888'}
           />
         </TouchableOpacity>
@@ -144,28 +144,28 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
-    margin: 6,
+    borderRadius: 8,
+    margin: 4,
     overflow: 'hidden',
-    minWidth: CARD_WIDTH - 12,
+    minWidth: CARD_WIDTH - 8,
     ...Platform.select({
       web: {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
       },
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
     }),
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1,
+    aspectRatio: 1.1,
     backgroundColor: '#f5f5f5',
     position: 'relative',
   },
@@ -182,14 +182,14 @@ const styles = StyleSheet.create({
   },
   discountBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 6,
+    left: 6,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FF385C',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 8,
     gap: 2,
   },
   hotDealBadge: {
@@ -197,28 +197,28 @@ const styles = StyleSheet.create({
   },
   discountText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
   },
   likeBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       web: {
-        boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       },
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.12,
-        shadowRadius: 3,
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
       },
       android: {
         elevation: 2,
@@ -226,48 +226,48 @@ const styles = StyleSheet.create({
     }),
   },
   content: {
-    padding: 10,
+    padding: 8,
   },
   shop: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: '#FF385C',
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   name: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '500',
     color: '#333',
-    lineHeight: 18,
-    marginBottom: 8,
-    minHeight: 36,
+    lineHeight: 14,
+    marginBottom: 4,
+    minHeight: 28,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   salePrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FF385C',
   },
   oldPrice: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#999',
     textDecorationLine: 'line-through',
-    marginTop: 2,
-    marginBottom: 10,
+    marginTop: 1,
+    marginBottom: 6,
   },
   buyBtn: {
     backgroundColor: '#FF385C',
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
     alignItems: 'center',
   },
   buyText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
   },
 });
