@@ -8,10 +8,14 @@ import {
   Platform,
   Linking,
   Alert,
+  Dimensions,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 48) / 2; // 2 columns with padding
 
 interface ProductCardProps {
   product: Product;
@@ -68,14 +72,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
 
   const savings = product.originalPrice - product.salePrice;
   const productUrl = getProductUrl();
+  const isHotDeal = product.discountPercentage >= 40;
 
   const CardContent = (
     <View style={[styles.card, style]}>
-      {/* Image */}
+      {/* Image Section */}
       <View style={styles.imageContainer}>
         {imageError ? (
           <View style={styles.imagePlaceholder}>
-            <Ionicons name="image-outline" size={32} color="#ccc" />
+            <Ionicons name="image-outline" size={48} color="#ddd" />
+            <Text style={styles.placeholderText}>No Image</Text>
           </View>
         ) : (
           <Image
@@ -87,7 +93,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
         )}
 
         {/* Discount Badge */}
-        <View style={styles.discountBadge}>
+        <View style={[styles.discountBadge, isHotDeal && styles.hotDealBadge]}>
+          {isHotDeal && <Ionicons name="flame" size={14} color="#fff" />}
           <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
         </View>
 
@@ -98,35 +105,63 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
         >
           <Ionicons
             name={isLiked ? 'heart' : 'heart-outline'}
-            size={18}
-            color={isLiked ? '#FF385C' : '#666'}
+            size={20}
+            color={isLiked ? '#FF385C' : '#888'}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Info */}
-      <View style={styles.info}>
-        <Text style={styles.shop}>{product.shopName}</Text>
-        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
-
-        <View style={styles.priceRow}>
-          <Text style={styles.salePrice}>{formatPrice(product.salePrice)} ден</Text>
-          <Text style={styles.oldPrice}>{formatPrice(product.originalPrice)} ден</Text>
+      {/* Content Section */}
+      <View style={styles.content}>
+        {/* Shop Name */}
+        <View style={styles.shopRow}>
+          <View style={styles.shopBadge}>
+            <Text style={styles.shopText}>{product.shopName}</Text>
+          </View>
         </View>
 
-        <View style={styles.savingsRow}>
-          <Ionicons name="pricetag" size={12} color="#10B981" />
-          <Text style={styles.savingsText}>Заштеди {formatPrice(savings)} ден</Text>
+        {/* Product Name */}
+        <Text style={styles.productName} numberOfLines={2}>
+          {product.name}
+        </Text>
+
+        {/* Brand */}
+        {product.brand && (
+          <Text style={styles.brandText}>{product.brand}</Text>
+        )}
+
+        {/* Prices */}
+        <View style={styles.priceSection}>
+          <View style={styles.priceRow}>
+            <Text style={styles.salePrice}>{formatPrice(product.salePrice)}</Text>
+            <Text style={styles.currency}>ден</Text>
+          </View>
+          <Text style={styles.originalPrice}>{formatPrice(product.originalPrice)} ден</Text>
         </View>
 
-        {/* Buttons */}
-        <View style={styles.buttons}>
+        {/* Savings */}
+        <View style={styles.savingsBadge}>
+          <Ionicons name="trending-down" size={14} color="#059669" />
+          <Text style={styles.savingsText}>Заштеда: {formatPrice(savings)} ден</Text>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actions}>
           <TouchableOpacity style={styles.buyBtn} onPress={handlePress}>
-            <Ionicons name="cart-outline" size={16} color="#fff" />
-            <Text style={styles.buyText}>Купи</Text>
+            <Ionicons name="bag-handle-outline" size={18} color="#fff" />
+            <Text style={styles.buyText}>Купи сега</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.copyBtn} onPress={handleCopyLink}>
-            <Ionicons name="copy-outline" size={16} color="#666" />
+        </View>
+
+        {/* Secondary Actions */}
+        <View style={styles.secondaryActions}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleCopyLink}>
+            <Ionicons name="link-outline" size={18} color="#666" />
+            <Text style={styles.iconBtnText}>Копирај</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleCopyLink}>
+            <Ionicons name="share-social-outline" size={18} color="#666" />
+            <Text style={styles.iconBtnText}>Сподели</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -139,7 +174,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
         href={productUrl}
         target="_blank"
         rel="noopener noreferrer"
-        style={{ textDecoration: 'none', color: 'inherit', flex: 1 }}
+        style={{ textDecoration: 'none', color: 'inherit', flex: 1, minWidth: CARD_WIDTH }}
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest('button') || target.closest('[data-btn]')) {
@@ -153,7 +188,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
   }
 
   return (
-    <TouchableOpacity onPress={handlePress} activeOpacity={0.95} style={{ flex: 1 }}>
+    <TouchableOpacity
+      onPress={handlePress}
+      activeOpacity={0.95}
+      style={{ flex: 1, minWidth: CARD_WIDTH }}
+    >
       {CardContent}
     </TouchableOpacity>
   );
@@ -163,28 +202,30 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
-    margin: 6,
+    borderRadius: 16,
+    margin: 8,
     overflow: 'hidden',
+    minWidth: CARD_WIDTH - 16,
     ...Platform.select({
       web: {
-        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       },
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 3,
+        elevation: 5,
       },
     }),
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 1,
-    backgroundColor: '#f5f5f5',
+    aspectRatio: 0.85,
+    backgroundColor: '#f8f8f8',
     position: 'relative',
   },
   image: {
@@ -198,116 +239,162 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
   },
+  placeholderText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#aaa',
+  },
   discountBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FF385C',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 4,
+  },
+  hotDealBadge: {
+    backgroundColor: '#FF6B00',
   },
   discountText: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
   },
   likeBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    top: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       web: {
-        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
       },
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
-  info: {
-    padding: 12,
+  content: {
+    padding: 16,
   },
-  shop: {
+  shopRow: {
+    marginBottom: 8,
+  },
+  shopBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFF0F3',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  shopText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FF385C',
     textTransform: 'uppercase',
-    marginBottom: 4,
+    letterSpacing: 0.5,
   },
-  name: {
-    fontSize: 13,
+  productName: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#1a1a1a',
-    lineHeight: 18,
-    marginBottom: 8,
-    minHeight: 36,
+    lineHeight: 22,
+    marginBottom: 6,
+    minHeight: 44,
+  },
+  brandText: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 12,
+  },
+  priceSection: {
+    marginBottom: 10,
   },
   priceRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
+    alignItems: 'baseline',
   },
   salePrice: {
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: '800',
     color: '#FF385C',
   },
-  oldPrice: {
-    fontSize: 12,
+  currency: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FF385C',
+    marginLeft: 4,
+  },
+  originalPrice: {
+    fontSize: 14,
     color: '#999',
     textDecorationLine: 'line-through',
+    marginTop: 2,
   },
-  savingsRow: {
+  savingsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginBottom: 12,
+    backgroundColor: '#ECFDF5',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    marginBottom: 16,
   },
   savingsText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#10B981',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#059669',
   },
-  buttons: {
-    flexDirection: 'row',
-    gap: 8,
+  actions: {
+    marginBottom: 12,
   },
   buyBtn: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
     backgroundColor: '#FF385C',
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
   },
   buyText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
   },
-  copyBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+  secondaryActions: {
+    flexDirection: 'row',
     justifyContent: 'center',
+    gap: 16,
+  },
+  iconBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  iconBtnText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
 });
 

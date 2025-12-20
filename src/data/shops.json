@@ -175,8 +175,52 @@
       "isActive": true,
       "affiliateBaseUrl": "https://www.pakansport.mk",
       "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "massimo_dutti_mk",
+      "name": "Massimo Dutti MK",
+      "logo": "https://www.massimodutti.com/favicon.ico",
+      "website": "https://www.massimodutti.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.massimodutti.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "oysho_mk",
+      "name": "Oysho MK",
+      "logo": "https://www.oysho.com/favicon.ico",
+      "website": "https://www.oysho.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.oysho.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "deichmann_mk",
+      "name": "Deichmann MK",
+      "logo": "https://www.deichmann.com/favicon.ico",
+      "website": "https://www.deichmann.com/mk-mk/",
+      "category": "shoes",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.deichmann.com/mk-mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "ccc_mk",
+      "name": "CCC MK",
+      "logo": "https://ccc.mk/favicon.ico",
+      "website": "https://ccc.mk/",
+      "category": "shoes",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://ccc.mk",
+      "affiliateParam": "utm_source=stilix"
     }
   ],
   "lastUpdated": "2025-12-20",
-  "version": "1.3.0"
+  "version": "1.4.0"
 }

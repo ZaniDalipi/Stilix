@@ -21,15 +21,28 @@ const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'data', 'scrapedProducts.j
 const SCRAPE_TIMEOUT = 30000; // 30 seconds per shop
 const MAX_PRODUCTS_PER_SHOP = 50;
 
-// Shop configurations with correct Macedonian URLs
+// Shop configurations with comprehensive sale/discount URLs for Macedonia
+// Includes: popust, akcija, sale, rasprodazba, sezonska-ponuda
+// Gender-specific: zheni/women, mazhi/men, deca/kids
 const SHOPS = [
   {
     id: 'lc_waikiki',
     name: 'LC Waikiki MK',
     urls: [
+      // Main sale pages
       'https://www.lcwaikiki.com/mk-MK/MK/sale',
-      'https://www.lcwaikiki.com/mk-MK/MK/sale/mens',
       'https://www.lcwaikiki.com/mk-MK/MK/sale/womens',
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/mens',
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/kids',
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/baby',
+      // Popust/discount variations
+      'https://www.lcwaikiki.com/mk-MK/MK/popust',
+      'https://www.lcwaikiki.com/mk-MK/MK/akcija',
+      // Category sales
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/womens/dresses',
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/womens/tops',
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/mens/t-shirts',
+      'https://www.lcwaikiki.com/mk-MK/MK/sale/mens/shirts',
     ],
     category: 'fashion',
   },
@@ -37,8 +50,24 @@ const SHOPS = [
     id: 'reserved_mk',
     name: 'Reserved MK',
     urls: [
+      // Sezonska ponuda - main sales
       'https://www.reserved.com/mk/mk/zhena/sezonska-ponuda',
       'https://www.reserved.com/mk/mk/mazh/sezonska-ponuda',
+      'https://www.reserved.com/mk/mk/deca/sezonska-ponuda',
+      // Sale pages
+      'https://www.reserved.com/mk/mk/zhena/sale',
+      'https://www.reserved.com/mk/mk/mazh/sale',
+      'https://www.reserved.com/mk/mk/deca/sale',
+      // Popust variations
+      'https://www.reserved.com/mk/mk/zhena/popust',
+      'https://www.reserved.com/mk/mk/mazh/popust',
+      'https://www.reserved.com/mk/mk/deca/popust',
+      // Category-specific sales
+      'https://www.reserved.com/mk/mk/zhena/sezonska-ponuda/fustani',
+      'https://www.reserved.com/mk/mk/zhena/sezonska-ponuda/palto-i-jakni',
+      'https://www.reserved.com/mk/mk/zhena/sezonska-ponuda/bluzi-i-koshuli',
+      'https://www.reserved.com/mk/mk/mazh/sezonska-ponuda/jakni',
+      'https://www.reserved.com/mk/mk/mazh/sezonska-ponuda/pantaloni',
     ],
     category: 'fashion',
   },
@@ -46,9 +75,21 @@ const SHOPS = [
     id: 'house_mk',
     name: 'House MK',
     urls: [
+      // Special offer pages
       'https://www.housebrand.com/mk/mk/special-offer-ro/all',
       'https://www.housebrand.com/mk/mk/special-offer-ro/for-her',
       'https://www.housebrand.com/mk/mk/special-offer-ro/for-him',
+      // Sale pages
+      'https://www.housebrand.com/mk/mk/sale',
+      'https://www.housebrand.com/mk/mk/sale/women',
+      'https://www.housebrand.com/mk/mk/sale/men',
+      // Popust variations
+      'https://www.housebrand.com/mk/mk/popust',
+      'https://www.housebrand.com/mk/mk/akcija',
+      // Category sales
+      'https://www.housebrand.com/mk/mk/special-offer-ro/for-her/dresses',
+      'https://www.housebrand.com/mk/mk/special-offer-ro/for-her/jackets',
+      'https://www.housebrand.com/mk/mk/special-offer-ro/for-him/jackets',
     ],
     category: 'fashion',
   },
@@ -56,9 +97,20 @@ const SHOPS = [
     id: 'cropp_mk',
     name: 'Cropp MK',
     urls: [
+      // Main sale pages
       'https://www.cropp.com/mk/mk/sale',
       'https://www.cropp.com/mk/mk/sale/women',
       'https://www.cropp.com/mk/mk/sale/men',
+      // Popust/akcija
+      'https://www.cropp.com/mk/mk/popust',
+      'https://www.cropp.com/mk/mk/akcija',
+      'https://www.cropp.com/mk/mk/popust/zheni',
+      'https://www.cropp.com/mk/mk/popust/mazhi',
+      // Category sales
+      'https://www.cropp.com/mk/mk/sale/women/dresses',
+      'https://www.cropp.com/mk/mk/sale/women/jackets',
+      'https://www.cropp.com/mk/mk/sale/men/jackets',
+      'https://www.cropp.com/mk/mk/sale/men/jeans',
     ],
     category: 'fashion',
   },
@@ -66,9 +118,22 @@ const SHOPS = [
     id: 'sinsay_mk',
     name: 'Sinsay MK',
     urls: [
+      // Main sale pages
       'https://www.sinsay.com/mk/mk/sale',
       'https://www.sinsay.com/mk/mk/sale/women',
       'https://www.sinsay.com/mk/mk/sale/men',
+      'https://www.sinsay.com/mk/mk/sale/kids',
+      // Popust/akcija variations
+      'https://www.sinsay.com/mk/mk/popust',
+      'https://www.sinsay.com/mk/mk/akcija',
+      'https://www.sinsay.com/mk/mk/popust/zheni',
+      'https://www.sinsay.com/mk/mk/popust/mazhi',
+      'https://www.sinsay.com/mk/mk/popust/deca',
+      // Category sales
+      'https://www.sinsay.com/mk/mk/sale/women/dresses',
+      'https://www.sinsay.com/mk/mk/sale/women/tops',
+      'https://www.sinsay.com/mk/mk/sale/kids/girls',
+      'https://www.sinsay.com/mk/mk/sale/kids/boys',
     ],
     category: 'fashion',
   },
@@ -76,9 +141,22 @@ const SHOPS = [
     id: 'office_shoes',
     name: 'Office Shoes MK',
     urls: [
+      // Akcija pages
       'https://www.officeshoes.mk/mk/akcija',
       'https://www.officeshoes.mk/mk/akcija/zenski',
       'https://www.officeshoes.mk/mk/akcija/mashi',
+      'https://www.officeshoes.mk/mk/akcija/detski',
+      // Popust variations
+      'https://www.officeshoes.mk/mk/popust',
+      'https://www.officeshoes.mk/mk/popust/zenski',
+      'https://www.officeshoes.mk/mk/popust/mashi',
+      // Rasprodazba
+      'https://www.officeshoes.mk/mk/rasprodazba',
+      // Category sales
+      'https://www.officeshoes.mk/mk/akcija/patiki',
+      'https://www.officeshoes.mk/mk/akcija/cizmi',
+      'https://www.officeshoes.mk/mk/akcija/sandali',
+      'https://www.officeshoes.mk/mk/akcija/sportski',
     ],
     category: 'shoes',
   },
@@ -86,9 +164,23 @@ const SHOPS = [
     id: 'buzz_sneakers',
     name: 'Buzz Sneakers MK',
     urls: [
+      // Akcija pages
       'https://www.buzzsneakers.com/mk/akcija',
       'https://www.buzzsneakers.com/mk/akcija/women',
       'https://www.buzzsneakers.com/mk/akcija/men',
+      'https://www.buzzsneakers.com/mk/akcija/kids',
+      // Popust/sale variations
+      'https://www.buzzsneakers.com/mk/popust',
+      'https://www.buzzsneakers.com/mk/sale',
+      'https://www.buzzsneakers.com/mk/rasprodazba',
+      // Macedonian gender terms
+      'https://www.buzzsneakers.com/mk/akcija/zheni',
+      'https://www.buzzsneakers.com/mk/akcija/mazhi',
+      'https://www.buzzsneakers.com/mk/akcija/deca',
+      // Brand sales
+      'https://www.buzzsneakers.com/mk/akcija/nike',
+      'https://www.buzzsneakers.com/mk/akcija/adidas',
+      'https://www.buzzsneakers.com/mk/akcija/puma',
     ],
     category: 'shoes',
   },
@@ -96,8 +188,18 @@ const SHOPS = [
     id: 'zara_mk',
     name: 'Zara MK',
     urls: [
+      // Special prices / sale pages
       'https://www.zara.com/mk/en/woman-special-prices-l1314.html',
       'https://www.zara.com/mk/en/man-special-prices-l806.html',
+      'https://www.zara.com/mk/en/kids-special-prices-l526.html',
+      // Sale variations
+      'https://www.zara.com/mk/en/sale-woman-l1313.html',
+      'https://www.zara.com/mk/en/sale-man-l805.html',
+      'https://www.zara.com/mk/en/sale-kids-l525.html',
+      // Category sales
+      'https://www.zara.com/mk/en/woman-dresses-special-prices-l1314.html',
+      'https://www.zara.com/mk/en/woman-coats-special-prices-l1314.html',
+      'https://www.zara.com/mk/en/man-jackets-special-prices-l806.html',
     ],
     category: 'fashion',
   },
@@ -105,8 +207,21 @@ const SHOPS = [
     id: 'hm_mk',
     name: 'H&M MK',
     urls: [
+      // Rasprodazba (sale) pages
+      'https://www2.hm.com/mk_mk/rasprodazba.html',
       'https://www2.hm.com/mk_mk/rasprodazba/zheni.html',
       'https://www2.hm.com/mk_mk/rasprodazba/mazhi.html',
+      'https://www2.hm.com/mk_mk/rasprodazba/deca.html',
+      'https://www2.hm.com/mk_mk/rasprodazba/bebe.html',
+      // Popust/akcija variations
+      'https://www2.hm.com/mk_mk/popust/zheni.html',
+      'https://www2.hm.com/mk_mk/popust/mazhi.html',
+      'https://www2.hm.com/mk_mk/akcija.html',
+      // Category sales
+      'https://www2.hm.com/mk_mk/rasprodazba/zheni/fustani.html',
+      'https://www2.hm.com/mk_mk/rasprodazba/zheni/bluzi.html',
+      'https://www2.hm.com/mk_mk/rasprodazba/mazhi/jakni.html',
+      'https://www2.hm.com/mk_mk/rasprodazba/zheni/jakni.html',
     ],
     category: 'fashion',
   },
@@ -114,8 +229,18 @@ const SHOPS = [
     id: 'bershka_mk',
     name: 'Bershka MK',
     urls: [
+      // Sale pages
       'https://www.bershka.com/mk/woman/sale-c1010378020.html',
       'https://www.bershka.com/mk/man/sale-c1010378518.html',
+      // Additional sale URLs
+      'https://www.bershka.com/mk/sale-c0p102034048.html',
+      'https://www.bershka.com/mk/woman/sale/view-all-c1010378117.html',
+      'https://www.bershka.com/mk/man/sale/view-all-c1010378539.html',
+      // Category sales
+      'https://www.bershka.com/mk/woman/sale/dresses-c1010378078.html',
+      'https://www.bershka.com/mk/woman/sale/tops-c1010378052.html',
+      'https://www.bershka.com/mk/woman/sale/jackets-c1010378036.html',
+      'https://www.bershka.com/mk/man/sale/jackets-c1010378533.html',
     ],
     category: 'fashion',
   },
@@ -123,8 +248,17 @@ const SHOPS = [
     id: 'pullbear_mk',
     name: 'Pull&Bear MK',
     urls: [
+      // Sale pages
       'https://www.pullandbear.com/mk/woman/sale-n6417',
       'https://www.pullandbear.com/mk/man/sale-n6485',
+      // View all sale
+      'https://www.pullandbear.com/mk/woman/sale/view-all-n6421',
+      'https://www.pullandbear.com/mk/man/sale/view-all-n6489',
+      // Category sales
+      'https://www.pullandbear.com/mk/woman/sale/dresses-n6418',
+      'https://www.pullandbear.com/mk/woman/sale/jackets-n6419',
+      'https://www.pullandbear.com/mk/man/sale/jackets-n6486',
+      'https://www.pullandbear.com/mk/man/sale/t-shirts-n6487',
     ],
     category: 'fashion',
   },
@@ -132,7 +266,15 @@ const SHOPS = [
     id: 'stradivarius_mk',
     name: 'Stradivarius MK',
     urls: [
+      // Sale pages
       'https://www.stradivarius.com/mk/woman/sale-c1020206580.html',
+      'https://www.stradivarius.com/mk/sale-c1020035578.html',
+      // Category sales
+      'https://www.stradivarius.com/mk/woman/sale/dresses-c1020206618.html',
+      'https://www.stradivarius.com/mk/woman/sale/tops-c1020206598.html',
+      'https://www.stradivarius.com/mk/woman/sale/jackets-c1020206588.html',
+      'https://www.stradivarius.com/mk/woman/sale/jeans-c1020206608.html',
+      'https://www.stradivarius.com/mk/woman/sale/shoes-c1020206628.html',
     ],
     category: 'fashion',
   },
@@ -140,8 +282,16 @@ const SHOPS = [
     id: 'mango_mk',
     name: 'Mango MK',
     urls: [
+      // Sale pages
       'https://shop.mango.com/mk/en/women/sale_cg1720',
       'https://shop.mango.com/mk/en/men/sale_cg1721',
+      'https://shop.mango.com/mk/en/kids/sale_cg1722',
+      // Category sales
+      'https://shop.mango.com/mk/en/women/sale/dresses-and-jumpsuits_cg1720-100',
+      'https://shop.mango.com/mk/en/women/sale/coats-and-jackets_cg1720-200',
+      'https://shop.mango.com/mk/en/women/sale/shoes_cg1720-600',
+      'https://shop.mango.com/mk/en/men/sale/jackets_cg1721-100',
+      'https://shop.mango.com/mk/en/men/sale/shoes_cg1721-400',
     ],
     category: 'fashion',
   },
@@ -149,9 +299,25 @@ const SHOPS = [
     id: 'sportsvision_mk',
     name: 'Sport Vision MK',
     urls: [
+      // Akcija pages
       'https://www.sportvision.mk/akcija',
       'https://www.sportvision.mk/akcija/obuvki',
       'https://www.sportvision.mk/akcija/obleka',
+      'https://www.sportvision.mk/akcija/zheni',
+      'https://www.sportvision.mk/akcija/mazhi',
+      'https://www.sportvision.mk/akcija/deca',
+      // Popust/rasprodazba variations
+      'https://www.sportvision.mk/popust',
+      'https://www.sportvision.mk/rasprodazba',
+      // Brand sales
+      'https://www.sportvision.mk/akcija/nike',
+      'https://www.sportvision.mk/akcija/adidas',
+      'https://www.sportvision.mk/akcija/puma',
+      'https://www.sportvision.mk/akcija/under-armour',
+      // Category sales
+      'https://www.sportvision.mk/akcija/patiki',
+      'https://www.sportvision.mk/akcija/trenerki',
+      'https://www.sportvision.mk/akcija/jakni',
     ],
     category: 'sportswear',
   },
@@ -159,7 +325,18 @@ const SHOPS = [
     id: 'anmag_mk',
     name: 'AnMag MK',
     urls: [
+      // Popust pages
       'https://www.anmag.mk/popust',
+      'https://www.anmag.mk/popust/zheni',
+      'https://www.anmag.mk/popust/mazhi',
+      'https://www.anmag.mk/popust/deca',
+      // Akcija/rasprodazba
+      'https://www.anmag.mk/akcija',
+      'https://www.anmag.mk/rasprodazba',
+      // Category sales
+      'https://www.anmag.mk/popust/obuvki',
+      'https://www.anmag.mk/popust/obleka',
+      'https://www.anmag.mk/popust/sportska-oprema',
     ],
     category: 'fashion',
   },
@@ -167,9 +344,87 @@ const SHOPS = [
     id: 'pakan_mk',
     name: 'Pakan Sport MK',
     urls: [
+      // Rasprodazba pages
       'https://www.pakansport.mk/rasprodazba',
+      'https://www.pakansport.mk/rasprodazba/zheni',
+      'https://www.pakansport.mk/rasprodazba/mazhi',
+      'https://www.pakansport.mk/rasprodazba/deca',
+      // Popust/akcija
+      'https://www.pakansport.mk/popust',
+      'https://www.pakansport.mk/akcija',
+      // Category sales
+      'https://www.pakansport.mk/rasprodazba/patiki',
+      'https://www.pakansport.mk/rasprodazba/obleka',
+      'https://www.pakansport.mk/rasprodazba/oprema',
+      // Brand sales
+      'https://www.pakansport.mk/rasprodazba/nike',
+      'https://www.pakansport.mk/rasprodazba/adidas',
     ],
     category: 'sportswear',
+  },
+  {
+    id: 'massimo_dutti_mk',
+    name: 'Massimo Dutti MK',
+    urls: [
+      // Sale pages
+      'https://www.massimodutti.com/mk/woman/sale-c1718052.html',
+      'https://www.massimodutti.com/mk/man/sale-c1718054.html',
+      // Category sales
+      'https://www.massimodutti.com/mk/woman/sale/dresses-c1718052-101.html',
+      'https://www.massimodutti.com/mk/woman/sale/coats-c1718052-201.html',
+      'https://www.massimodutti.com/mk/man/sale/jackets-c1718054-101.html',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'oysho_mk',
+    name: 'Oysho MK',
+    urls: [
+      // Sale pages
+      'https://www.oysho.com/mk/sale-c1020107015.html',
+      'https://www.oysho.com/mk/sale/lingerie-c1020107020.html',
+      'https://www.oysho.com/mk/sale/sportswear-c1020107025.html',
+      'https://www.oysho.com/mk/sale/pyjamas-c1020107030.html',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'deichmann_mk',
+    name: 'Deichmann MK',
+    urls: [
+      // Akcija/sale pages
+      'https://www.deichmann.com/mk-mk/akcija',
+      'https://www.deichmann.com/mk-mk/akcija/zheni',
+      'https://www.deichmann.com/mk-mk/akcija/mazhi',
+      'https://www.deichmann.com/mk-mk/akcija/deca',
+      // Popust variations
+      'https://www.deichmann.com/mk-mk/popust',
+      'https://www.deichmann.com/mk-mk/rasprodazba',
+      // Category sales
+      'https://www.deichmann.com/mk-mk/akcija/patiki',
+      'https://www.deichmann.com/mk-mk/akcija/cizmi',
+      'https://www.deichmann.com/mk-mk/akcija/sandali',
+    ],
+    category: 'shoes',
+  },
+  {
+    id: 'ccc_mk',
+    name: 'CCC MK',
+    urls: [
+      // Sale/akcija pages
+      'https://ccc.mk/akcija',
+      'https://ccc.mk/akcija/zheni',
+      'https://ccc.mk/akcija/mazhi',
+      'https://ccc.mk/akcija/deca',
+      // Popust variations
+      'https://ccc.mk/popust',
+      'https://ccc.mk/rasprodazba',
+      // Category sales
+      'https://ccc.mk/akcija/patiki',
+      'https://ccc.mk/akcija/cizmi',
+      'https://ccc.mk/akcija/elegantni',
+    ],
+    category: 'shoes',
   },
 ];
 
