@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Product } from '../types';
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../constants/theme';
 
@@ -180,11 +179,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
               />
             )}
 
-            {/* Gradient overlay for better text visibility */}
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.03)']}
-              style={styles.imageGradient}
-            />
+            {/* Overlay for better text visibility */}
+            <View style={styles.imageGradient} />
 
             {/* Discount Badge */}
             <View style={[styles.discountBadge, isHotDeal && styles.hotDealBadge]}>
@@ -251,15 +247,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
                 style={styles.viewButton}
                 onPress={handlePress}
               >
-                <LinearGradient
-                  colors={[colors.primary, colors.primaryDark]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientButton}
-                >
+                <View style={styles.gradientButton}>
                   <Ionicons name="bag-handle-outline" size={16} color={colors.white} />
                   <Text style={styles.viewButtonText}>Shop Now</Text>
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.copyButton} onPress={handleCopyLink}>
@@ -429,6 +420,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: spacing.md,
     gap: spacing.xs,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
   },
   viewButtonText: {
     color: colors.white,
