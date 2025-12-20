@@ -1,55 +1,72 @@
 // Modern theme configuration for Stilix
 export const colors = {
-  // Primary palette
-  primary: '#FF385C', // Vibrant coral/red - inspired by modern fashion apps
+  // Primary palette - Vibrant gradient colors
+  primary: '#FF385C',
   primaryDark: '#E31C5F',
   primaryLight: '#FF5A7D',
 
   // Secondary palette
-  secondary: '#00A699', // Teal accent
+  secondary: '#00A699',
   secondaryDark: '#008A7B',
   secondaryLight: '#00C4B4',
 
+  // Accent colors for variety
+  accent1: '#7C3AED', // Purple
+  accent2: '#F59E0B', // Amber
+  accent3: '#10B981', // Emerald
+  accent4: '#3B82F6', // Blue
+
   // Neutrals
   white: '#FFFFFF',
-  black: '#222222',
+  black: '#1A1A2E',
 
-  // Grays
-  gray100: '#F7F7F7',
-  gray200: '#EBEBEB',
-  gray300: '#DDDDDD',
-  gray400: '#B0B0B0',
-  gray500: '#717171',
-  gray600: '#484848',
+  // Grays - Softer tones
+  gray100: '#F8FAFC',
+  gray200: '#F1F5F9',
+  gray300: '#E2E8F0',
+  gray400: '#94A3B8',
+  gray500: '#64748B',
+  gray600: '#475569',
 
   // Status colors
-  success: '#00A699',
-  error: '#FF385C',
-  warning: '#FFB400',
-  info: '#428BFF',
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#3B82F6',
 
   // Discount badge colors
-  discount: '#E41E31',
-  discountBg: '#FFEBEE',
+  discount: '#EF4444',
+  discountBg: '#FEE2E2',
+  hotDeal: '#F97316',
 
   // Background colors
   background: '#FFFFFF',
-  backgroundSecondary: '#F7F7F7',
+  backgroundSecondary: '#F8FAFC',
+  backgroundGradientStart: '#667EEA',
+  backgroundGradientEnd: '#764BA2',
   cardBackground: '#FFFFFF',
 
   // Text colors
-  textPrimary: '#222222',
-  textSecondary: '#717171',
-  textMuted: '#B0B0B0',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
+  textMuted: '#94A3B8',
   textLight: '#FFFFFF',
 
   // Border colors
-  border: '#EBEBEB',
-  borderDark: '#DDDDDD',
+  border: '#E2E8F0',
+  borderDark: '#CBD5E1',
 
   // Shadow
   shadow: 'rgba(0, 0, 0, 0.08)',
   shadowDark: 'rgba(0, 0, 0, 0.15)',
+  shadowColored: 'rgba(255, 56, 92, 0.2)',
+
+  // Gradient colors
+  gradientPink: ['#FF385C', '#FF6B6B'],
+  gradientPurple: ['#7C3AED', '#A78BFA'],
+  gradientBlue: ['#3B82F6', '#60A5FA'],
+  gradientGreen: ['#10B981', '#34D399'],
+  gradientOrange: ['#F97316', '#FBBF24'],
 };
 
 export const spacing = {
@@ -90,29 +107,37 @@ export const fontWeight = {
   medium: '500' as const,
   semibold: '600' as const,
   bold: '700' as const,
+  extrabold: '800' as const,
 };
 
 export const shadows = {
   small: {
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
   },
   medium: {
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 4,
   },
   large: {
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 16,
+    shadowRadius: 24,
     elevation: 8,
+  },
+  glow: {
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
 };
 
@@ -120,6 +145,12 @@ export const layout = {
   screenPadding: spacing.lg,
   cardGap: spacing.md,
   gridColumns: 2,
+};
+
+export const animations = {
+  fast: 150,
+  normal: 300,
+  slow: 500,
 };
 
 export default {
@@ -130,4 +161,5 @@ export default {
   fontWeight,
   shadows,
   layout,
+  animations,
 };
