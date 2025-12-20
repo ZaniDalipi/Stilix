@@ -355,12 +355,24 @@ function normalizeImageUrl(url, baseUrl) {
   if (!url) return '';
   // Clean up the URL
   url = url.trim();
-  if (url.startsWith('http')) return url;
-  if (url.startsWith('//')) return `https:${url}`;
+
+  // Already absolute URL - return as is
+  if (url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://')) {
+    return url;
+  }
+
+  // Protocol-relative URL
+  if (url.startsWith('//')) {
+    return `https:${url}`;
+  }
+
+  // Relative URL starting with /
   if (url.startsWith('/')) {
     const base = new URL(baseUrl);
     return `${base.origin}${url}`;
   }
+
+  // Relative URL without /
   return `${baseUrl.replace(/\/$/, '')}/${url}`;
 }
 
@@ -610,7 +622,8 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
 
       // Extract URL - comprehensive patterns for product links
       const linkPatterns = [
-        // Specific product page patterns
+        // Specific product page patterns - look for actual product URLs
+        /href="(https?:\/\/[^"]*\/[a-z]+-[a-z0-9-]+-\d+[^"]*)"/i,
         /href="([^"]*\/product\/[^"]*)"/i,
         /href="([^"]*\/produkt\/[^"]*)"/i,
         /href="([^"]*\/p\/[^"]*)"/i,
@@ -623,23 +636,38 @@ function extractHtmlProducts(html, shopId, shopName, baseUrl, category) {
         /data-url="([^"]+)"/i,
         /data-href="([^"]+)"/i,
         /data-product-url="([^"]+)"/i,
-        // Generic href patterns (last resort)
+        // Generic href patterns (last resort) - only relative URLs
         /href="(\/[^"]*[a-z]+-[a-z0-9-]+[^"]*)"/i,
-        /href="(https?:\/\/[^"]+)"/i,
       ];
 
       let productUrl = baseUrl;
       for (const pattern of linkPatterns) {
         const match = productHtml.match(pattern);
         if (match) {
-          const url = match[1];
+          let url = match[1].trim();
+
           // Skip invalid URLs
           if (url.includes('javascript:') || url.includes('#') ||
               url === '/' || url.length < 5 ||
               url.includes('login') || url.includes('cart') ||
-              url.includes('wishlist') || url.includes('compare')) {
+              url.includes('wishlist') || url.includes('compare') ||
+              url.includes('brend') || url.includes('brand') ||
+              url.includes('kategori') || url.includes('category')) {
             continue;
           }
+
+          // Check if URL contains another URL (malformed)
+          const httpCount = (url.match(/https?:\/\//gi) || []).length;
+          if (httpCount > 1) {
+            // Extract just the last valid URL
+            const lastUrlMatch = url.match(/(https?:\/\/[^"'\s]+)$/i);
+            if (lastUrlMatch) {
+              url = lastUrlMatch[1];
+            } else {
+              continue;
+            }
+          }
+
           productUrl = normalizeImageUrl(url, baseUrl);
           break;
         }
