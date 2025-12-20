@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,11 @@ import {
   TouchableOpacity,
   Platform,
   Linking,
-  ActivityIndicator,
   Alert,
-  Animated,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
-import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../constants/theme';
 
 interface ProductCardProps {
   product: Product;
@@ -23,69 +20,39 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, style }) => {
-  const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  // Format price in Macedonian format: 1.299 ден
   const formatPrice = (price: number): string => {
     return price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
-  const getProductUrl = () => {
-    return product.affiliateUrl || product.productUrl || '';
-  };
+  const getProductUrl = () => product.affiliateUrl || product.productUrl || '';
 
   const openProductLink = () => {
     const url = getProductUrl();
-    if (!url || url.length < 10) {
-      if (Platform.OS !== 'web') {
-        Alert.alert('No Link', 'This product does not have a valid link.');
-      }
-      return;
-    }
+    if (!url) return;
 
     if (Platform.OS === 'web') {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
-      Linking.openURL(url).catch((error) => {
-        console.error('Error opening URL:', error);
-        Alert.alert('Error', `Could not open: ${url}`);
+      Linking.openURL(url).catch(() => {
+        Alert.alert('Error', 'Could not open link');
       });
     }
-  };
-
-  const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.98,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      friction: 3,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
   };
 
   const handlePress = () => {
     if (onPress) {
       onPress(product);
-      return;
+    } else {
+      openProductLink();
     }
-    openProductLink();
   };
 
   const handleCopyLink = async () => {
     const url = getProductUrl();
-    if (!url || url.length < 10) {
-      Alert.alert('No Link', 'No link available to copy.');
-      return;
-    }
+    if (!url) return;
 
     try {
       if (Platform.OS === 'web') {
@@ -93,372 +60,252 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
       } else {
         await Clipboard.setStringAsync(url);
       }
-      Alert.alert('Copied!', 'Link copied to clipboard');
-    } catch (error) {
-      Alert.alert('Error', 'Could not copy link');
+      Alert.alert('Copied!', 'Link copied');
+    } catch {
+      Alert.alert('Error', 'Could not copy');
     }
-  };
-
-  const handleLikePress = () => {
-    setIsLiked(!isLiked);
   };
 
   const savings = product.originalPrice - product.salePrice;
   const productUrl = getProductUrl();
-  const isHotDeal = product.discountPercentage >= 40;
 
-  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (Platform.OS === 'web' && productUrl) {
-      return (
-        <a
-          href={productUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest('[data-clickable]')) {
-              e.preventDefault();
-            }
-          }}
+  const CardContent = (
+    <View style={[styles.card, style]}>
+      {/* Image */}
+      <View style={styles.imageContainer}>
+        {imageError ? (
+          <View style={styles.imagePlaceholder}>
+            <Ionicons name="image-outline" size={32} color="#ccc" />
+          </View>
+        ) : (
+          <Image
+            source={{ uri: product.imageUrl }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        )}
+
+        {/* Discount Badge */}
+        <View style={styles.discountBadge}>
+          <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
+        </View>
+
+        {/* Like Button */}
+        <TouchableOpacity
+          style={styles.likeBtn}
+          onPress={() => setIsLiked(!isLiked)}
         >
-          {children}
-        </a>
-      );
-    }
-    return <>{children}</>;
-  };
+          <Ionicons
+            name={isLiked ? 'heart' : 'heart-outline'}
+            size={18}
+            color={isLiked ? '#FF385C' : '#666'}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Info */}
+      <View style={styles.info}>
+        <Text style={styles.shop}>{product.shopName}</Text>
+        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
+
+        <View style={styles.priceRow}>
+          <Text style={styles.salePrice}>{formatPrice(product.salePrice)} ден</Text>
+          <Text style={styles.oldPrice}>{formatPrice(product.originalPrice)} ден</Text>
+        </View>
+
+        <View style={styles.savingsRow}>
+          <Ionicons name="pricetag" size={12} color="#10B981" />
+          <Text style={styles.savingsText}>Заштеди {formatPrice(savings)} ден</Text>
+        </View>
+
+        {/* Buttons */}
+        <View style={styles.buttons}>
+          <TouchableOpacity style={styles.buyBtn} onPress={handlePress}>
+            <Ionicons name="cart-outline" size={16} color="#fff" />
+            <Text style={styles.buyText}>Купи</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.copyBtn} onPress={handleCopyLink}>
+            <Ionicons name="copy-outline" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
+  if (Platform.OS === 'web' && productUrl) {
+    return (
+      <a
+        href={productUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ textDecoration: 'none', color: 'inherit', flex: 1 }}
+        onClick={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest('button') || target.closest('[data-btn]')) {
+            e.preventDefault();
+          }
+        }}
+      >
+        {CardContent}
+      </a>
+    );
+  }
 
   return (
-    <CardWrapper>
-      <Animated.View style={[styles.cardWrapper, { transform: [{ scale: scaleAnim }] }]}>
-        <TouchableOpacity
-          style={[styles.container, style]}
-          onPress={handlePress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={1}
-        >
-          {/* Image Section */}
-          <View style={styles.imageSection}>
-            {imageLoading && (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary} />
-              </View>
-            )}
-            {imageError ? (
-              <View style={styles.errorContainer}>
-                <Ionicons name="image-outline" size={48} color={colors.gray300} />
-                <Text style={styles.errorText}>Image not available</Text>
-              </View>
-            ) : (
-              <Image
-                source={{ uri: product.imageUrl }}
-                style={styles.image}
-                resizeMode="cover"
-                onLoadStart={() => setImageLoading(true)}
-                onLoadEnd={() => setImageLoading(false)}
-                onError={() => {
-                  setImageError(true);
-                  setImageLoading(false);
-                }}
-              />
-            )}
-
-            {/* Top Row - Discount & Like */}
-            <View style={styles.imageOverlay}>
-              <View style={[styles.discountBadge, isHotDeal && styles.hotDealBadge]}>
-                {isHotDeal && <Ionicons name="flame" size={14} color="#FFF" style={styles.flameIcon} />}
-                <Text style={styles.discountText}>-{product.discountPercentage}%</Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.likeButton}
-                onPress={handleLikePress}
-                data-clickable="true"
-              >
-                <Ionicons
-                  name={isLiked ? 'heart' : 'heart-outline'}
-                  size={20}
-                  color={isLiked ? colors.primary : '#666'}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Shop Badge */}
-            <View style={styles.shopBadge}>
-              <Text style={styles.shopBadgeText}>{product.shopName}</Text>
-            </View>
-          </View>
-
-          {/* Details Section */}
-          <View style={styles.detailsSection}>
-            {/* Product Name */}
-            <Text style={styles.productName} numberOfLines={2}>
-              {product.name}
-            </Text>
-
-            {/* Brand if available */}
-            {product.brand && (
-              <Text style={styles.brandText}>{product.brand}</Text>
-            )}
-
-            {/* Price Row */}
-            <View style={styles.priceRow}>
-              <View style={styles.priceContainer}>
-                <Text style={styles.salePrice}>{formatPrice(product.salePrice)}</Text>
-                <Text style={styles.currency}>ден</Text>
-              </View>
-              <Text style={styles.originalPrice}>{formatPrice(product.originalPrice)} ден</Text>
-            </View>
-
-            {/* Savings Badge */}
-            <View style={styles.savingsBadge}>
-              <Ionicons name="arrow-down-circle" size={14} color={colors.success} />
-              <Text style={styles.savingsText}>Заштеди {formatPrice(savings)} ден</Text>
-            </View>
-
-            {/* Action Buttons */}
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={styles.shopButton}
-                onPress={handlePress}
-                data-clickable="true"
-              >
-                <Ionicons name="cart-outline" size={18} color="#FFF" />
-                <Text style={styles.shopButtonText}>Купи</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.copyButton}
-                onPress={handleCopyLink}
-                data-clickable="true"
-              >
-                <Ionicons name="copy-outline" size={18} color={colors.gray600} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.shareButton}
-                onPress={handleCopyLink}
-                data-clickable="true"
-              >
-                <Ionicons name="share-social-outline" size={18} color={colors.gray600} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-    </CardWrapper>
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.95} style={{ flex: 1 }}>
+      {CardContent}
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  cardWrapper: {
+  card: {
     flex: 1,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    overflow: 'hidden',
+    backgroundColor: '#fff',
+    borderRadius: 12,
     margin: 6,
+    overflow: 'hidden',
     ...Platform.select({
+      web: {
+        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+      },
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 12,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 4,
-      },
-      web: {
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        cursor: 'pointer',
+        elevation: 3,
       },
     }),
   },
-  imageSection: {
+  imageContainer: {
     width: '100%',
-    aspectRatio: 0.8,
-    backgroundColor: '#F8F9FA',
+    aspectRatio: 1,
+    backgroundColor: '#f5f5f5',
     position: 'relative',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  loadingContainer: {
-    ...StyleSheet.absoluteFillObject,
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-  },
-  errorContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-  },
-  errorText: {
-    marginTop: 8,
-    fontSize: 12,
-    color: colors.gray400,
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    backgroundColor: '#f0f0f0',
   },
   discountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E53935',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  hotDealBadge: {
-    backgroundColor: '#FF6D00',
-  },
-  flameIcon: {
-    marginRight: 4,
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#FF385C',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   discountText: {
-    color: '#FFFFFF',
-    fontSize: 13,
+    color: '#fff',
+    fontSize: 12,
     fontWeight: '700',
   },
-  likeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+  likeBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
+      web: {
+        boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+      },
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
       },
       android: {
         elevation: 2,
       },
-      web: {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      },
     }),
   },
-  shopBadge: {
-    position: 'absolute',
-    bottom: 10,
-    left: 10,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+  info: {
+    padding: 12,
   },
-  shopBadgeText: {
-    color: '#FFFFFF',
+  shop: {
     fontSize: 11,
     fontWeight: '600',
-  },
-  detailsSection: {
-    padding: 14,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A2E',
-    lineHeight: 20,
+    color: '#FF385C',
+    textTransform: 'uppercase',
     marginBottom: 4,
   },
-  brandText: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 10,
+  name: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    lineHeight: 18,
+    marginBottom: 8,
+    minHeight: 36,
   },
   priceRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 8,
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginRight: 10,
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
   },
   salePrice: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '800',
-    color: colors.primary,
+    color: '#FF385C',
   },
-  currency: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-    marginLeft: 3,
-  },
-  originalPrice: {
-    fontSize: 13,
-    color: '#9CA3AF',
+  oldPrice: {
+    fontSize: 12,
+    color: '#999',
     textDecorationLine: 'line-through',
   },
-  savingsBadge: {
+  savingsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
+    gap: 4,
     marginBottom: 12,
   },
   savingsText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#059669',
-    marginLeft: 5,
+    color: '#10B981',
   },
-  actionsRow: {
+  buttons: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
   },
-  shopButton: {
+  buyBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 10,
     gap: 6,
+    backgroundColor: '#FF385C',
+    paddingVertical: 10,
+    borderRadius: 8,
   },
-  shopButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
+  buyText: {
+    color: '#fff',
+    fontSize: 13,
     fontWeight: '700',
   },
-  copyButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  shareButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#F3F4F6',
+  copyBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
