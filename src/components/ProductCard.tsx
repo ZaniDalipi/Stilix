@@ -26,40 +26,43 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
   const [imageError, setImageError] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
+  // Format price in Macedonian format: 1.299 ден
   const formatPrice = (price: number, currency: string): string => {
-    return `${price.toLocaleString()} ${currency}`;
+    // Format with period as thousands separator (Macedonian style)
+    const formatted = price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${formatted} ${currency === 'MKD' ? 'ден' : currency}`;
   };
 
   const getProductUrl = () => {
     return product.affiliateUrl || product.productUrl || '';
   };
 
-  const handlePress = async () => {
+  const openProductLink = () => {
+    const url = getProductUrl();
+    if (!url || url.length < 10) {
+      if (Platform.OS !== 'web') {
+        Alert.alert('No Link', 'This product does not have a valid link.');
+      }
+      return;
+    }
+
+    // For web, use window.open directly
+    if (Platform.OS === 'web') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      Linking.openURL(url).catch((error) => {
+        console.error('Error opening URL:', error);
+        Alert.alert('Error', `Could not open: ${url}`);
+      });
+    }
+  };
+
+  const handlePress = () => {
     if (onPress) {
       onPress(product);
       return;
     }
-
-    const url = getProductUrl();
-
-    if (!url || url.length < 10) {
-      Alert.alert('No Link', 'This product does not have a valid link.');
-      return;
-    }
-
-    try {
-      // On web, just open the URL directly
-      if (Platform.OS === 'web') {
-        window.open(url, '_blank');
-        return;
-      }
-
-      // On mobile, use Linking
-      await Linking.openURL(url);
-    } catch (error) {
-      console.error('Error opening URL:', error);
-      Alert.alert('Error', `Could not open: ${url}`);
-    }
+    openProductLink();
   };
 
   const handleCopyLink = async () => {
@@ -88,13 +91,38 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
   };
 
   const savings = product.originalPrice - product.salePrice;
+  const productUrl = getProductUrl();
+
+  // For web, wrap in anchor tag for proper link behavior
+  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (Platform.OS === 'web' && productUrl) {
+      return (
+        <a
+          href={productUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'none', color: 'inherit' }}
+          onClick={(e) => {
+            // Don't follow link if clicking on buttons inside
+            if ((e.target as HTMLElement).closest('button, [role="button"]')) {
+              e.preventDefault();
+            }
+          }}
+        >
+          {children}
+        </a>
+      );
+    }
+    return <>{children}</>;
+  };
 
   return (
-    <TouchableOpacity
-      style={[styles.container, style]}
-      onPress={handlePress}
-      activeOpacity={0.9}
-    >
+    <CardWrapper>
+      <TouchableOpacity
+        style={[styles.container, style]}
+        onPress={handlePress}
+        activeOpacity={0.9}
+      >
       {/* Image Container */}
       <View style={styles.imageContainer}>
         {imageLoading && (
@@ -216,7 +244,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, styl
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </CardWrapper>
   );
 };
 

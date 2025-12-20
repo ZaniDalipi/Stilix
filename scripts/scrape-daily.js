@@ -92,6 +92,85 @@ const SHOPS = [
     ],
     category: 'shoes',
   },
+  {
+    id: 'zara_mk',
+    name: 'Zara MK',
+    urls: [
+      'https://www.zara.com/mk/en/woman-special-prices-l1314.html',
+      'https://www.zara.com/mk/en/man-special-prices-l806.html',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'hm_mk',
+    name: 'H&M MK',
+    urls: [
+      'https://www2.hm.com/mk_mk/rasprodazba/zheni.html',
+      'https://www2.hm.com/mk_mk/rasprodazba/mazhi.html',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'bershka_mk',
+    name: 'Bershka MK',
+    urls: [
+      'https://www.bershka.com/mk/woman/sale-c1010378020.html',
+      'https://www.bershka.com/mk/man/sale-c1010378518.html',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'pullbear_mk',
+    name: 'Pull&Bear MK',
+    urls: [
+      'https://www.pullandbear.com/mk/woman/sale-n6417',
+      'https://www.pullandbear.com/mk/man/sale-n6485',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'stradivarius_mk',
+    name: 'Stradivarius MK',
+    urls: [
+      'https://www.stradivarius.com/mk/woman/sale-c1020206580.html',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'mango_mk',
+    name: 'Mango MK',
+    urls: [
+      'https://shop.mango.com/mk/en/women/sale_cg1720',
+      'https://shop.mango.com/mk/en/men/sale_cg1721',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'sportsvision_mk',
+    name: 'Sport Vision MK',
+    urls: [
+      'https://www.sportvision.mk/akcija',
+      'https://www.sportvision.mk/akcija/obuvki',
+      'https://www.sportvision.mk/akcija/obleka',
+    ],
+    category: 'sportswear',
+  },
+  {
+    id: 'anmag_mk',
+    name: 'AnMag MK',
+    urls: [
+      'https://www.anmag.mk/popust',
+    ],
+    category: 'fashion',
+  },
+  {
+    id: 'pakan_mk',
+    name: 'Pakan Sport MK',
+    urls: [
+      'https://www.pakansport.mk/rasprodazba',
+    ],
+    category: 'sportswear',
+  },
 ];
 
 // Fetch URL with timeout

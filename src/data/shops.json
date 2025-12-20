@@ -76,8 +76,107 @@
       "isActive": true,
       "affiliateBaseUrl": "https://www.buzzsneakers.com/mk",
       "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "zara_mk",
+      "name": "Zara MK",
+      "logo": "https://www.zara.com/favicon.ico",
+      "website": "https://www.zara.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.zara.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "hm_mk",
+      "name": "H&M MK",
+      "logo": "https://www2.hm.com/favicon.ico",
+      "website": "https://www2.hm.com/mk_mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www2.hm.com/mk_mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "bershka_mk",
+      "name": "Bershka MK",
+      "logo": "https://www.bershka.com/favicon.ico",
+      "website": "https://www.bershka.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.bershka.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "pullbear_mk",
+      "name": "Pull&Bear MK",
+      "logo": "https://www.pullandbear.com/favicon.ico",
+      "website": "https://www.pullandbear.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.pullandbear.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "stradivarius_mk",
+      "name": "Stradivarius MK",
+      "logo": "https://www.stradivarius.com/favicon.ico",
+      "website": "https://www.stradivarius.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.stradivarius.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "mango_mk",
+      "name": "Mango MK",
+      "logo": "https://shop.mango.com/favicon.ico",
+      "website": "https://shop.mango.com/mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://shop.mango.com/mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "sportsvision_mk",
+      "name": "Sport Vision MK",
+      "logo": "https://www.sportvision.mk/favicon.ico",
+      "website": "https://www.sportvision.mk/",
+      "category": "sportswear",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.sportvision.mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "anmag_mk",
+      "name": "AnMag MK",
+      "logo": "https://www.anmag.mk/favicon.ico",
+      "website": "https://www.anmag.mk/",
+      "category": "fashion",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.anmag.mk",
+      "affiliateParam": "utm_source=stilix"
+    },
+    {
+      "id": "pakan_mk",
+      "name": "Pakan Sport MK",
+      "logo": "https://www.pakansport.mk/favicon.ico",
+      "website": "https://www.pakansport.mk/",
+      "category": "sportswear",
+      "currency": "MKD",
+      "isActive": true,
+      "affiliateBaseUrl": "https://www.pakansport.mk",
+      "affiliateParam": "utm_source=stilix"
     }
   ],
-  "lastUpdated": "2025-12-19",
-  "version": "1.2.0"
+  "lastUpdated": "2025-12-20",
+  "version": "1.3.0"
 }
